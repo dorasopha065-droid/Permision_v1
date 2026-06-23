@@ -4,7 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Attendance Portal</title>
-    <link rel="stylesheet" href="css/style.css">
+    <script>
+        (function() {
+            const prefix = window.location.protocol === 'file:' ? '' : '/';
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = prefix + 'css/style.css';
+            document.head.appendChild(link);
+        })();
+    </script>
     <!-- SheetJS for client-side Excel/CSV parsing -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
@@ -299,7 +307,19 @@
     </div>
 
     <!-- Client-side Logic Script -->
-    <script src="js/config.js"></script>
-    <script src="js/admin.js"></script>
+    <script>
+        (function() {
+            const prefix = window.location.protocol === 'file:' ? '' : '/';
+            function loadScript(src, cb) {
+                const s = document.createElement('script');
+                s.src = src;
+                s.onload = cb;
+                document.body.appendChild(s);
+            }
+            loadScript(prefix + 'js/config.js', function() {
+                loadScript(prefix + 'js/admin.js');
+            });
+        })();
+    </script>
 </body>
 </html>

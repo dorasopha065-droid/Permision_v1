@@ -42,3 +42,23 @@ const CONFIG = {
         }
     }
 };
+
+// Automatic image relative paths fixer for server-served environments
+(function() {
+    function fixRelativeImages() {
+        if (window.location.protocol !== 'file:') {
+            document.querySelectorAll("img").forEach(img => {
+                const src = img.getAttribute("src");
+                if (src && !src.startsWith("/") && !src.startsWith("http")) {
+                    img.setAttribute("src", "/" + src);
+                }
+            });
+        }
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", fixRelativeImages);
+    } else {
+        fixRelativeImages();
+    }
+})();
