@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Principal Dashboard - Attendance Portal</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="css/style.css">
     <!-- SheetJS for client-side Excel/CSV generation -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
@@ -22,11 +22,14 @@
     <div class="dashboard-container" style="max-width: 1000px;">
         <!-- Dashboard Header -->
         <header class="dashboard-header">
-            <div class="dashboard-title-area">
-                <h1 id="principalTitle">Principal Workspace</h1>
-                <div class="user-info">
-                    <span id="loggedInLabel">Logged in as: </span><strong id="usernameLabel">...</strong>
-                    <span id="roleBadge" class="user-role-badge">Principal</span>
+            <div class="dashboard-title-area" style="display: flex; flex-direction: row; align-items: center; gap: 1rem;">
+                <img src="assets/school_logo.png" alt="School Logo" class="school-logo-header">
+                <div style="display: flex; flex-direction: column;">
+                    <h1 id="principalTitle">Principal Workspace</h1>
+                    <div class="user-info">
+                        <span id="loggedInLabel">Logged in as: </span><strong id="usernameLabel">...</strong>
+                        <span id="roleBadge" class="user-role-badge">Principal</span>
+                    </div>
                 </div>
             </div>
             
@@ -109,6 +112,7 @@
     </div>
 
     <!-- Client-side Logic Script -->
-    <script src="/js/principal.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/principal.js"></script>
 </body>
 </html>

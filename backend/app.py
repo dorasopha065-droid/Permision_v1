@@ -374,12 +374,17 @@ async def import_students_from_url(payload: ImportUrlRequest):
 FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend"))
 CSS_DIR = os.path.join(FRONTEND_DIR, "css")
 JS_DIR = os.path.join(FRONTEND_DIR, "js")
+ASSETS_DIR = os.path.join(FRONTEND_DIR, "assets")
 
-# Mount CSS & JS folders if they exist (will be created in subsequent steps)
-if os.path.exists(CSS_DIR):
-    app.mount("/css", StaticFiles(directory=CSS_DIR), name="css")
-if os.path.exists(JS_DIR):
-    app.mount("/js", StaticFiles(directory=JS_DIR), name="js")
+# Create directories in case they don't exist yet, to prevent fastapi mounting errors
+os.makedirs(CSS_DIR, exist_ok=True)
+os.makedirs(JS_DIR, exist_ok=True)
+os.makedirs(ASSETS_DIR, exist_ok=True)
+
+# Mount CSS & JS folders
+app.mount("/css", StaticFiles(directory=CSS_DIR), name="css")
+app.mount("/js", StaticFiles(directory=JS_DIR), name="js")
+app.mount("/assets", StaticFiles(directory=ASSETS_DIR), name="assets")
 
 def serve_html_file(filename: str) -> HTMLResponse:
     """Helper function to load and serve HTML files from the frontend directory."""
@@ -414,10 +419,6 @@ async def serve_admin_dashboard():
 async def serve_principal_dashboard():
     """Serve the principal dashboard page."""
     return serve_html_file("principal_dashboard.html")
-
-# Create directories in case they don't exist yet, to prevent fastapi mounting errors
-os.makedirs(CSS_DIR, exist_ok=True)
-os.makedirs(JS_DIR, exist_ok=True)
 
 # ----------------- Telegram Bot Background Polling -----------------
 

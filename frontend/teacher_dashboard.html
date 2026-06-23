@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teacher Dashboard - Attendance Portal</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <!-- Glow Background Blobs -->
@@ -21,11 +21,14 @@
     <div class="dashboard-container">
         <!-- Dashboard Header -->
         <header class="dashboard-header">
-            <div class="dashboard-title-area">
-                <h1 id="teacherTitle">Teacher Workspace</h1>
-                <div class="user-info">
-                    <span id="loggedInLabel">Logged in as: </span><strong id="usernameLabel">...</strong>
-                    <span id="roleBadge" class="user-role-badge">Teacher</span>
+            <div class="dashboard-title-area" style="display: flex; flex-direction: row; align-items: center; gap: 1rem;">
+                <img src="assets/school_logo.png" alt="School Logo" class="school-logo-header">
+                <div style="display: flex; flex-direction: column;">
+                    <h1 id="teacherTitle">Teacher Workspace</h1>
+                    <div class="user-info">
+                        <span id="loggedInLabel">Logged in as: </span><strong id="usernameLabel">...</strong>
+                        <span id="roleBadge" class="user-role-badge">Teacher</span>
+                    </div>
                 </div>
             </div>
             
@@ -97,6 +100,7 @@
     </div>
 
     <!-- Client-side Logic Script -->
-    <script src="/js/teacher.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/teacher.js"></script>
 </body>
 </html>

@@ -4,14 +4,14 @@ document.addEventListener("DOMContentLoaded", () => {
     // Session Verification
     const sessionStr = localStorage.getItem("userSession");
     if (!sessionStr) {
-        window.location.href = "/login";
+        CONFIG.redirect("/login");
         return;
     }
     
     const user = JSON.parse(sessionStr);
     if (user.role !== "Teacher") {
         alert("Unauthorized access. Only teachers can access this page.");
-        window.location.href = "/login";
+        CONFIG.redirect("/login");
         return;
     }
 
@@ -180,7 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>
             `;
 
-            const response = await fetch("/api/students");
+            const response = await fetch(CONFIG.getApiUrl("/api/students"));
             const data = await response.json();
 
             if (response.ok && data.status === "success") {
@@ -353,7 +353,7 @@ document.addEventListener("DOMContentLoaded", () => {
         btnSubmitText.textContent = trans.btnSubmitting;
 
         try {
-            const response = await fetch("/api/attendance", {
+            const response = await fetch(CONFIG.getApiUrl("/api/attendance"), {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -396,7 +396,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Handle Logout
     logoutBtn.addEventListener("click", () => {
         localStorage.removeItem("userSession");
-        window.location.href = "/login";
+        CONFIG.redirect("/login");
     });
 
     // Class Filter change listener

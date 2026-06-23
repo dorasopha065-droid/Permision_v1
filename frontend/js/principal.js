@@ -4,14 +4,14 @@ document.addEventListener("DOMContentLoaded", () => {
     // Session Verification
     const sessionStr = localStorage.getItem("userSession");
     if (!sessionStr) {
-        window.location.href = "/login";
+        CONFIG.redirect("/login");
         return;
     }
     
     const user = JSON.parse(sessionStr);
     if (user.role !== "Principal") {
         alert("Unauthorized access. Only the Principal can access this page.");
-        window.location.href = "/login";
+        CONFIG.redirect("/login");
         return;
     }
 
@@ -155,7 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
 
         try {
-            const response = await fetch("/api/students");
+            const response = await fetch(CONFIG.getApiUrl("/api/students"));
             const data = await response.json();
 
             if (response.ok && data.students) {
@@ -289,7 +289,7 @@ document.addEventListener("DOMContentLoaded", () => {
         detailsModal.classList.add("show");
 
         try {
-            const response = await fetch(`/api/students/${student.student_id}/absences`);
+            const response = await fetch(CONFIG.getApiUrl(`/api/students/${student.student_id}/absences`));
             const data = await response.json();
 
             if (response.ok && data.absences) {
@@ -417,7 +417,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Handle Logout
     logoutBtn.addEventListener("click", () => {
         localStorage.removeItem("userSession");
-        window.location.href = "/login";
+        CONFIG.redirect("/login");
     });
 
     // Initial Fetch

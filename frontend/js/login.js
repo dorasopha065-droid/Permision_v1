@@ -17,6 +17,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const lblUsername = document.getElementById("lblUsername");
     const lblPassword = document.getElementById("lblPassword");
 
+    // Settings Modal Elements
+    const settingsBtn = document.getElementById("settingsBtn");
+    const settingsModal = document.getElementById("settingsModal");
+    const closeSettingsBtn = document.getElementById("closeSettingsBtn");
+    const cancelSettingsBtn = document.getElementById("cancelSettingsBtn");
+    const saveSettingsBtn = document.getElementById("saveSettingsBtn");
+    const apiUrlInput = document.getElementById("apiUrlInput");
+    const settingsTitle = document.getElementById("settingsTitle");
+    const lblApiUrl = document.getElementById("lblApiUrl");
+    const apiUrlHelp = document.getElementById("apiUrlHelp");
+
     const translations = {
         en: {
             appTitle: "Attendance System",
@@ -30,7 +41,10 @@ document.addEventListener("DOMContentLoaded", () => {
             errAuth: "Invalid username or password. Please try again.",
             errConnect: "Failed to connect to the server. Please ensure the backend is running.",
             successRedirect: "Login successful! Redirecting...",
-            underConstruction: "Dashboard under construction for role: "
+            underConstruction: "Dashboard under construction for role: ",
+            settingsTitle: "API Server Configuration",
+            lblApiUrl: "Backend API URL",
+            apiUrlHelp: "Used when opening the site directly via file:// protocol."
         },
         km: {
             appTitle: "ប្រព័ន្ធគ្រប់គ្រងវត្តមាន",
@@ -44,7 +58,10 @@ document.addEventListener("DOMContentLoaded", () => {
             errAuth: "ឈ្មោះគណនី ឬលេខសម្ងាត់មិនត្រឹមត្រូវឡើយ។ សូមព្យាយាមម្តងទៀត។",
             errConnect: "មិនអាចភ្ជាប់ទៅកាន់ម៉ាស៊ីនបម្រើបានទេ។ សូមប្រាកដថា backend កំពុងដំណើរការ។",
             successRedirect: "ការចូលប្រើប្រាស់បានជោគជ័យ! កំពុងបញ្ជូនបន្ត...",
-            underConstruction: "ផ្ទាំងគ្រប់គ្រងសម្រាប់តួនាទីនេះកំពុងសាងសង់៖ "
+            underConstruction: "ផ្ទាំងគ្រប់គ្រងសម្រាប់តួនាទីនេះកំពុងសាងសង់៖ ",
+            settingsTitle: "ការកំណត់ម៉ាស៊ីនបម្រើ API",
+            lblApiUrl: "អាសយដ្ឋាន API (URL) Backend",
+            apiUrlHelp: "ប្រើប្រាស់នៅពេលបើកដំណើរការវេបសាយផ្ទាល់តាមរយៈ file:// protocol។"
         }
     };
 
@@ -63,6 +80,11 @@ document.addEventListener("DOMContentLoaded", () => {
         lblPassword.textContent = trans.lblPassword;
         usernameInput.placeholder = trans.placeholderUsername;
         
+        // Settings Modal Translation
+        if (settingsTitle) settingsTitle.textContent = trans.settingsTitle;
+        if (lblApiUrl) lblApiUrl.textContent = trans.lblApiUrl;
+        if (apiUrlHelp) apiUrlHelp.textContent = trans.apiUrlHelp;
+        
         if (submitBtn.disabled) {
             btnText.textContent = trans.btnSigning;
         } else {
@@ -75,6 +97,40 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem("lang", currentLang);
         applyTranslations(currentLang);
     });
+
+    // Wire up Settings Modal
+    if (settingsBtn && settingsModal) {
+        settingsBtn.addEventListener("click", () => {
+            apiUrlInput.value = localStorage.getItem("backend_api_url") || "http://127.0.0.1:8000";
+            settingsModal.classList.add("show");
+        });
+
+        const closeModal = () => {
+            settingsModal.classList.remove("show");
+        };
+
+        if (closeSettingsBtn) closeSettingsBtn.addEventListener("click", closeModal);
+        if (cancelSettingsBtn) cancelSettingsBtn.addEventListener("click", closeModal);
+
+        if (saveSettingsBtn) {
+            saveSettingsBtn.addEventListener("click", () => {
+                const newUrl = apiUrlInput.value.trim();
+                if (newUrl) {
+                    localStorage.setItem("backend_api_url", newUrl);
+                } else {
+                    localStorage.removeItem("backend_api_url");
+                }
+                closeModal();
+            });
+        }
+
+        // Close by clicking outside
+        settingsModal.addEventListener("click", (e) => {
+            if (e.target === settingsModal) {
+                closeModal();
+            }
+        });
+    }
 
     // Helper to show alert notifications
     function showAlert(message, isSuccess = false) {
@@ -114,7 +170,8 @@ document.addEventListener("DOMContentLoaded", () => {
         btnText.textContent = trans.btnSigning;
         
         try {
-            const response = await fetch("/api/auth/login", {
+            const loginUrl = CONFIG.getApiUrl("/api/auth/login");
+            const response = await fetch(loginUrl, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -134,11 +191,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 setTimeout(() => {
                     const role = data.user.role;
                     if (role === "Teacher") {
-                        window.location.href = "/teacher";
+                        CONFIG.redirect("/teacher");
                     } else if (role === "Admin") {
-                        window.location.href = "/admin";
+                        CONFIG.redirect("/admin");
                     } else if (role === "Principal") {
-                        window.location.href = "/principal";
+                        CONFIG.redirect("/principal");
                     } else {
                         showAlert(`${trans.underConstruction} ${role}`, true);
                         submitBtn.disabled = false;

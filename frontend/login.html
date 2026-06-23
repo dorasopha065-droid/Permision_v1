@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign In - Attendance Portal</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <!-- Glow Background Blobs -->
@@ -19,14 +19,20 @@
 
     <div class="container">
         <div class="glass-card">
-            <!-- Language Selector Dropdown -->
-            <div class="lang-selector-container">
+            <!-- Language & Settings Selector Dropdown -->
+            <div class="lang-selector-container" style="display: flex; align-items: center; gap: 0.5rem;">
                 <select id="langSelect" class="lang-select">
                     <option value="en">EN</option>
                     <option value="km">KM</option>
                 </select>
+                <button id="settingsBtn" class="settings-toggle-btn" title="API Settings" style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--card-border); color: var(--text-primary); border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.5 1z"/></svg>
+                </button>
             </div>
 
+            <div class="logo-container">
+                <img src="assets/school_logo.png" alt="School Logo" class="school-logo">
+            </div>
             <h1 id="appTitle">Attendance System</h1>
             <p id="appSubtitle" class="subtitle">Enter credentials to access your dashboard</p>
 
@@ -73,7 +79,36 @@
         </div>
     </div>
 
+    <!-- API Settings Modal -->
+    <div id="settingsModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="settingsTitle">API Server Configuration</h3>
+                <button id="closeSettingsBtn" class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 1rem 0;">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label id="lblApiUrl" for="apiUrlInput" style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-secondary); text-transform: uppercase;">Backend API URL</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+                        </span>
+                        <input type="url" id="apiUrlInput" class="form-control" placeholder="http://127.0.0.1:8000" style="padding-left: 2.75rem;">
+                    </div>
+                    <small id="apiUrlHelp" style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.5rem; display: block;">
+                        Used when opening the site directly via file:// protocol.
+                    </small>
+                </div>
+            </div>
+            <div class="modal-footer" style="margin-top: 1rem; display: flex; gap: 1rem;">
+                <button type="button" id="cancelSettingsBtn" class="btn btn-secondary" style="padding: 0.6rem 1.2rem; font-size: 0.9rem;">Cancel</button>
+                <button type="button" id="saveSettingsBtn" class="btn btn-primary" style="padding: 0.6rem 1.2rem; font-size: 0.9rem; width: auto; min-width: 100px;">Save</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Client-side Logic Script -->
-    <script src="/js/login.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/login.js"></script>
 </body>
 </html>

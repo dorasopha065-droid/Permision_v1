@@ -1,31 +1,37 @@
 /* Premium CSS Stylesheet for School Attendance Management System */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-    --bg-gradient-start: #0f172a; /* Slate 900 */
-    --bg-gradient-end: #1e1b4b;   /* Indigo 950 */
+    --bg-gradient-start: #0a0f1d; /* Deep slate-black */
+    --bg-gradient-end: #120e2e;   /* Deep indigo-purple */
     
-    --card-bg: rgba(30, 41, 59, 0.7); /* Translucent Slate 800 */
+    --card-bg: rgba(17, 25, 40, 0.6); /* Translucent Slate 900 */
     --card-border: rgba(255, 255, 255, 0.08);
-    --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    --card-shadow: 0 20px 50px 0 rgba(0, 0, 0, 0.5);
     
     --text-primary: #f8fafc;   /* Slate 50 */
     --text-secondary: #94a3b8; /* Slate 400 */
-    --text-muted: #64748b;     /* Slate 500 */
+    --text-muted: #475569;     /* Slate 600 */
     
     --primary: #6366f1;        /* Indigo 500 */
     --primary-hover: #4f46e5;  /* Indigo 600 */
-    --primary-glow: rgba(99, 102, 241, 0.3);
+    --primary-glow: rgba(99, 102, 241, 0.25);
     
     --accent: #d946ef;         /* Fuchsia 500 */
+    --accent-glow: rgba(217, 70, 239, 0.2);
     
     /* Attendance Status Colors */
     --status-present: #10b981;     /* Emerald 500 */
-    --status-present-bg: rgba(16, 185, 129, 0.15);
-    --status-absent: #ef4444;      /* Red 500 */
-    --status-absent-bg: rgba(239, 68, 68, 0.15);
-    --status-late: #f59e0b;        /* Amber 500 */
-    --status-late-bg: rgba(245, 158, 11, 0.15);
+    --status-present-bg: rgba(16, 185, 129, 0.12);
+    --status-present-border: rgba(16, 185, 129, 0.3);
+    
+    --status-absent: #f43f5e;      /* Rose 500 */
+    --status-absent-bg: rgba(244, 63, 94, 0.12);
+    --status-absent-border: rgba(244, 63, 94, 0.3);
+    
+    --status-late: #fbbf24;        /* Amber 400 */
+    --status-late-bg: rgba(251, 191, 36, 0.12);
+    --status-late-border: rgba(251, 191, 36, 0.3);
     
     --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
@@ -46,6 +52,18 @@ body {
     align-items: center;
     overflow-x: hidden;
     line-height: 1.5;
+    position: relative;
+}
+
+/* Subtle background grid overlay */
+body::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 0);
+    background-size: 24px 24px;
+    z-index: -2;
+    pointer-events: none;
 }
 
 /* Background ambient glow blobs */
@@ -56,16 +74,64 @@ body {
     border-radius: 50%;
     background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
     z-index: -1;
-    filter: blur(40px);
+    filter: blur(50px);
 }
+
 .glow-1 {
     top: -10%;
     left: -10%;
+    animation: floatBlob 12s infinite alternate ease-in-out;
 }
+
 .glow-2 {
     bottom: -10%;
     right: -10%;
-    background: radial-gradient(circle, rgba(217, 70, 239, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
+    background: radial-gradient(circle, var(--accent-glow) 0%, rgba(0, 0, 0, 0) 70%);
+    animation: floatBlob 15s infinite alternate-reverse ease-in-out;
+}
+
+@keyframes floatBlob {
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+    50% {
+        transform: translate(50px, -50px) scale(1.1);
+    }
+    100% {
+        transform: translate(-30px, 30px) scale(0.9);
+    }
+}
+
+/* Fade in animation for content loading */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.container, .dashboard-container {
+    animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.1);
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.25);
 }
 
 /* Language Selector styling */
@@ -114,39 +180,41 @@ body {
 /* Glassmorphism Cards */
 .glass-card {
     background: var(--card-bg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
     border: 1px solid var(--card-border);
     border-radius: 24px;
-    box-shadow: var(--card-shadow);
-    padding: 3rem 2.5rem;
+    box-shadow: var(--card-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    padding: 3.5rem 2.5rem;
     width: 100%;
     max-width: 480px;
     position: relative;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-card:hover {
-    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45);
+    box-shadow: 0 30px 60px 0 rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.12);
 }
 
 /* Page Titles & Headers */
 h1 {
     font-size: 2.25rem;
-    font-weight: 700;
+    font-weight: 800;
     margin-bottom: 0.5rem;
-    background: linear-gradient(to right, #ffffff, #a5b4fc);
+    background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 50%, #818cf8 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     text-align: center;
+    letter-spacing: -0.02em;
 }
 
 .subtitle {
     color: var(--text-secondary);
-    font-size: 1rem;
+    font-size: 0.95rem;
     margin-bottom: 2.5rem;
     text-align: center;
-    font-weight: 300;
+    font-weight: 400;
 }
 
 /* Form Styles */
@@ -157,12 +225,12 @@ h1 {
 
 .form-group label {
     display: block;
-    font-size: 0.875rem;
-    font-weight: 500;
+    font-size: 0.75rem;
+    font-weight: 600;
     margin-bottom: 0.5rem;
     color: var(--text-secondary);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
 }
 
 .input-wrapper {
@@ -174,25 +242,35 @@ h1 {
 .input-icon {
     position: absolute;
     left: 1rem;
-    color: var(--text-muted);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+    transition: color 0.3s ease;
 }
 
 .form-control {
     width: 100%;
     padding: 0.875rem 1rem 0.875rem 2.75rem;
-    background: rgba(15, 23, 42, 0.6);
+    background: rgba(15, 23, 42, 0.5);
     border: 1px solid var(--card-border);
-    border-radius: 12px;
+    border-radius: 14px;
     color: var(--text-primary);
-    font-size: 1rem;
-    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    font-family: var(--font-sans);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .form-control:focus {
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 4px var(--primary-glow);
-    background: rgba(15, 23, 42, 0.8);
+    background: rgba(15, 23, 42, 0.7);
+    transform: translateY(-1px);
+}
+
+.form-control:focus + .input-icon {
+    color: #a5b4fc;
 }
 
 /* Dropdown select custom styling */
@@ -217,10 +295,10 @@ select.form-control option {
     align-items: center;
     justify-content: center;
     width: 100%;
-    padding: 0.875rem 1.5rem;
-    font-size: 1rem;
+    padding: 0.9rem 1.5rem;
+    font-size: 0.95rem;
     font-weight: 600;
-    border-radius: 12px;
+    border-radius: 14px;
     border: none;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -230,17 +308,25 @@ select.form-control option {
 .btn-primary {
     background: linear-gradient(135deg, var(--primary), #4f46e5);
     color: white;
-    box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.4);
+    box-shadow: 0 4px 15px 0 rgba(99, 102, 241, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px 0 rgba(99, 102, 241, 0.6);
+    box-shadow: 0 8px 25px 0 rgba(99, 102, 241, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
     background: linear-gradient(135deg, #4f46e5, #4338ca);
 }
 
 .btn-primary:active {
     transform: translateY(0);
+}
+
+/* Settings button hover rotate */
+.settings-toggle-btn:hover {
+    transform: rotate(45deg) scale(1.08);
+    background: rgba(99, 102, 241, 0.15) !important;
+    border-color: #818cf8 !important;
 }
 
 /* Alert Notification System */
@@ -249,15 +335,15 @@ select.form-control option {
     top: 20px;
     right: 20px;
     padding: 1rem 1.5rem;
-    border-radius: 12px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
     z-index: 1000;
     transform: translateX(120%);
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(16px);
 }
 
 .alert-banner.show {
@@ -265,20 +351,22 @@ select.form-control option {
 }
 
 .alert-success {
-    background: rgba(16, 185, 129, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(16, 185, 129, 0.85);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    color: white;
 }
 
 .alert-danger {
-    background: rgba(239, 68, 68, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(244, 63, 94, 0.85);
+    border: 1px solid rgba(244, 63, 94, 0.2);
+    color: white;
 }
 
 /* Dashboard Specific Layout */
 .dashboard-container {
     max-width: 1100px;
     width: 100%;
-    margin: 2rem auto;
+    margin: 3rem auto;
     padding: 1.5rem;
     display: flex;
     flex-direction: column;
@@ -292,11 +380,12 @@ select.form-control option {
     justify-content: space-between;
     align-items: center;
     background: var(--card-bg);
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--card-border);
     padding: 1.5rem 2rem;
-    border-radius: 20px;
-    box-shadow: var(--card-shadow);
+    border-radius: 24px;
+    box-shadow: var(--card-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     position: relative;
 }
 
@@ -309,24 +398,28 @@ select.form-control option {
     text-align: left;
     font-size: 1.75rem;
     margin-bottom: 0.25rem;
+    background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .user-info {
     color: var(--text-secondary);
-    font-size: 0.9rem;
+    font-size: 0.875rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
 }
 
 .user-role-badge {
-    background: rgba(99, 102, 241, 0.2);
-    border: 1px solid var(--primary);
-    color: #a5b4fc;
+    background: rgba(99, 102, 241, 0.15);
+    border: 1px solid rgba(99, 102, 241, 0.4);
+    color: #c7d2fe;
     padding: 0.2rem 0.6rem;
     border-radius: 20px;
     font-size: 0.75rem;
     font-weight: 600;
+    letter-spacing: 0.03em;
 }
 
 .header-actions {
@@ -336,28 +429,32 @@ select.form-control option {
 }
 
 .logout-btn {
-    background: rgba(239, 68, 68, 0.1);
-    color: #fca5a5;
-    border: 1px solid rgba(239, 68, 68, 0.2);
+    background: rgba(244, 63, 94, 0.1);
+    color: #fecdd3;
+    border: 1px solid rgba(244, 63, 94, 0.25);
     padding: 0.5rem 1rem;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
     font-weight: 500;
+    font-family: var(--font-sans);
     transition: all 0.3s ease;
 }
 
 .logout-btn:hover {
     background: var(--status-absent);
+    border-color: var(--status-absent);
     color: white;
+    box-shadow: 0 4px 15px rgba(244, 63, 94, 0.4);
+    transform: translateY(-1px);
 }
 
 /* Control Panel Card (Date selector and tools) */
 .controls-card {
     background: var(--card-bg);
     border: 1px solid var(--card-border);
-    border-radius: 20px;
+    border-radius: 24px;
     padding: 1.5rem 2rem;
-    box-shadow: var(--card-shadow);
+    box-shadow: var(--card-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -372,32 +469,35 @@ select.form-control option {
 }
 
 .date-selector label {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     color: var(--text-secondary);
-    font-weight: 500;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .date-input {
-    background: rgba(15, 23, 42, 0.6);
+    background: rgba(15, 23, 42, 0.5);
     border: 1px solid var(--card-border);
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 0.5rem 0.75rem;
     color: white;
     font-family: var(--font-sans);
     outline: none;
-    transition: border-color 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 .date-input:focus {
     border-color: var(--primary);
+    box-shadow: 0 0 0 2px var(--primary-glow);
 }
 
 /* Table Area styling */
 .table-card {
     background: var(--card-bg);
     border: 1px solid var(--card-border);
-    border-radius: 20px;
-    box-shadow: var(--card-shadow);
+    border-radius: 24px;
+    box-shadow: var(--card-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     overflow: hidden;
 }
 
@@ -413,13 +513,13 @@ select.form-control option {
 }
 
 .attendance-table th {
-    background: rgba(15, 23, 42, 0.4);
+    background: rgba(15, 23, 42, 0.35);
     padding: 1.25rem 1.5rem;
     font-weight: 600;
     color: var(--text-secondary);
     border-bottom: 1px solid var(--card-border);
-    font-size: 0.9rem;
-    letter-spacing: 0.05em;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
 }
 
@@ -432,11 +532,12 @@ select.form-control option {
 }
 
 .attendance-table tbody tr {
-    transition: background-color 0.2s ease;
+    transition: all 0.25s ease;
 }
 
 .attendance-table tbody tr:hover {
     background: rgba(255, 255, 255, 0.02);
+    transform: scale(1.002);
 }
 
 /* Table Row Contents */
@@ -447,11 +548,13 @@ select.form-control option {
 
 .student-name {
     font-weight: 600;
+    color: #ffffff;
 }
 
 .student-id {
     font-size: 0.8rem;
-    color: var(--text-muted);
+    color: var(--text-secondary);
+    margin-top: 0.15rem;
 }
 
 /* Status Pill Buttons in Rows */
@@ -464,33 +567,40 @@ select.form-control option {
     border: 1px solid var(--card-border);
     background: rgba(15, 23, 42, 0.4);
     color: var(--text-secondary);
-    padding: 0.4rem 0.8rem;
+    padding: 0.4rem 0.9rem;
     font-size: 0.85rem;
     font-weight: 600;
     border-radius: 20px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.25s ease;
+}
+
+.status-btn:hover {
+    transform: scale(1.05);
 }
 
 .status-btn[data-status="Present"]:hover, 
 .status-btn[data-status="Present"].active {
     background: var(--status-present-bg);
     color: var(--status-present);
-    border-color: var(--status-present);
+    border-color: var(--status-present-border);
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.15);
 }
 
 .status-btn[data-status="Absent"]:hover, 
 .status-btn[data-status="Absent"].active {
     background: var(--status-absent-bg);
     color: var(--status-absent);
-    border-color: var(--status-absent);
+    border-color: var(--status-absent-border);
+    box-shadow: 0 0 10px rgba(244, 63, 94, 0.15);
 }
 
 .status-btn[data-status="Late"]:hover, 
 .status-btn[data-status="Late"].active {
     background: var(--status-late-bg);
     color: var(--status-late);
-    border-color: var(--status-late);
+    border-color: var(--status-late-border);
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.15);
 }
 
 /* Total Absences Counter highlight */
@@ -500,19 +610,21 @@ select.form-control option {
     padding: 0.25rem 0.6rem;
     border-radius: 6px;
     font-size: 0.85rem;
+    color: var(--text-primary);
 }
 
 .absence-counter.high-absences {
     background: var(--status-absent-bg);
-    color: #fca5a5;
-    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #ffa5b2;
+    border: 1px solid var(--status-absent-border);
+    box-shadow: 0 0 8px rgba(244, 63, 94, 0.2);
 }
 
 .notes-input {
     background: rgba(15, 23, 42, 0.4);
     border: 1px solid var(--card-border);
-    border-radius: 8px;
-    padding: 0.4rem 0.75rem;
+    border-radius: 10px;
+    padding: 0.5rem 0.75rem;
     color: white;
     font-size: 0.875rem;
     width: 100%;
@@ -530,7 +642,7 @@ select.form-control option {
     display: flex;
     justify-content: flex-end;
     padding: 1.5rem;
-    background: rgba(15, 23, 42, 0.2);
+    background: rgba(15, 23, 42, 0.15);
 }
 
 .submit-container {
@@ -540,11 +652,11 @@ select.form-control option {
 
 /* Spinner Loader */
 .spinner {
-    border: 3px solid rgba(255, 255, 255, 0.3);
+    border: 3px solid rgba(255, 255, 255, 0.25);
     border-radius: 50%;
     border-top: 3px solid white;
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     animation: spin 1s linear infinite;
     display: inline-block;
 }
@@ -584,7 +696,7 @@ select.form-control option {
 /* Admin Dashboard Tab Styles */
 .tab-container {
     display: flex;
-    gap: 1.5rem;
+    gap: 0.5rem;
     border-bottom: 1px solid var(--card-border);
     padding-bottom: 0.5rem;
     margin-bottom: 1rem;
@@ -592,25 +704,27 @@ select.form-control option {
 
 .tab-btn {
     background: none;
-    border: none;
+    border: 1px solid transparent;
     color: var(--text-secondary);
     font-family: var(--font-sans);
-    font-size: 1.05rem;
+    font-size: 0.95rem;
     font-weight: 600;
     cursor: pointer;
-    border-bottom: 2px solid transparent;
-    padding: 0.5rem 0.25rem;
-    transition: all 0.3s ease;
+    padding: 0.6rem 1.25rem;
+    border-radius: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     outline: none;
 }
 
 .tab-btn:hover {
     color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.02);
 }
 
 .tab-btn.active {
-    color: var(--text-primary);
-    border-bottom-color: var(--primary);
+    color: #a5b4fc;
+    background: rgba(99, 102, 241, 0.15);
+    border-color: rgba(99, 102, 241, 0.25);
 }
 
 .tab-content {
@@ -626,8 +740,8 @@ select.form-control option {
     background: none;
     border: none;
     cursor: pointer;
-    padding: 0.4rem;
-    border-radius: 8px;
+    padding: 0.5rem;
+    border-radius: 10px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -640,7 +754,8 @@ select.form-control option {
 }
 
 .edit-btn:hover {
-    background: rgba(245, 158, 11, 0.15);
+    background: var(--status-late-bg);
+    border: 1px solid var(--status-late-border);
 }
 
 .delete-btn {
@@ -648,7 +763,17 @@ select.form-control option {
 }
 
 .delete-btn:hover {
-    background: rgba(239, 68, 68, 0.15);
+    background: var(--status-absent-bg);
+    border: 1px solid var(--status-absent-border);
+}
+
+.view-btn {
+    color: #818cf8;
+}
+
+.view-btn:hover {
+    background: rgba(99, 102, 241, 0.12);
+    border: 1px solid rgba(99, 102, 241, 0.25);
 }
 
 /* Modal overlay & popup container */
@@ -658,8 +783,8 @@ select.form-control option {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(15, 23, 42, 0.85);
-    backdrop-filter: blur(8px);
+    background: rgba(10, 15, 29, 0.85);
+    backdrop-filter: blur(12px);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -675,13 +800,15 @@ select.form-control option {
 }
 
 .modal-content {
-    background: var(--card-bg);
+    background: rgba(17, 25, 40, 0.8);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
     border: 1px solid var(--card-border);
     border-radius: 24px;
-    padding: 2rem 2.5rem;
+    padding: 2.5rem;
     width: 100%;
     max-width: 500px;
-    box-shadow: var(--card-shadow);
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6);
     transform: scale(0.9);
     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -700,7 +827,7 @@ select.form-control option {
 .modal-title {
     font-size: 1.5rem;
     font-weight: 700;
-    background: linear-gradient(to right, #ffffff, #a5b4fc);
+    background: linear-gradient(135deg, #ffffff, #a5b4fc);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
@@ -722,14 +849,34 @@ select.form-control option {
 }
 
 .btn-secondary {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.04);
     color: var(--text-secondary);
     border: 1px solid var(--card-border);
 }
 
 .btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.08);
     color: var(--text-primary);
+    transform: translateY(-2px);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.btn-success:hover {
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+}
+
+.btn-danger:hover {
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
     transform: translateY(-2px);
 }
 
@@ -739,3 +886,38 @@ select.form-control option {
     margin-top: 1.5rem;
 }
 
+/* School Logo Styles */
+.logo-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.school-logo {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.school-logo:hover {
+    transform: scale(1.08) rotate(5deg);
+}
+
+.school-logo-header {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease;
+}
+
+.school-logo-header:hover {
+    transform: scale(1.08);
+}
