@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Attendance Portal</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- SheetJS for client-side Excel/CSV parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+    <!-- Glow Background Blobs -->
+    <div class="glow-blob glow-1"></div>
+    <div class="glow-blob glow-2"></div>
+
+    <!-- Alert Toast Notification Area -->
+    <div id="alertBanner" class="alert-banner alert-success">
+        <span id="alertIcon">✓</span>
+        <span id="alertMessage">Success Message Here</span>
+    </div>
+
+    <div class="dashboard-container" style="max-width: 1000px;">
+        <!-- Dashboard Header -->
+        <header class="dashboard-header">
+            <div class="dashboard-title-area">
+                <h1 id="adminTitle">Admin Workspace</h1>
+                <div class="user-info">
+                    <span id="loggedInLabel">Logged in as: </span><strong id="usernameLabel">...</strong>
+                    <span id="roleBadge" class="user-role-badge">Admin</span>
+                </div>
+            </div>
+            
+            <div class="header-actions">
+                <div class="lang-selector-container" style="position: static; margin-right: 0.5rem;">
+                    <select id="langSelect" class="lang-select">
+                        <option value="en">EN</option>
+                        <option value="km">KM</option>
+                    </select>
+                </div>
+                <button id="logoutBtn" class="logout-btn">Sign Out</button>
+            </div>
+        </header>
+
+        <!-- Tab Switcher -->
+        <div class="tab-container">
+            <button id="tabUsers" class="tab-btn active">User Accounts</button>
+            <button id="tabStudents" class="tab-btn">Manage Students</button>
+        </div>
+
+        <!-- Tab 1: User Accounts Content -->
+        <div id="usersTabContent" class="tab-content active">
+            <section class="glass-card" style="max-width: 600px; margin: 1rem auto 0 auto; padding: 2.5rem 2rem;">
+                <h1 id="cardTitle" style="text-align: left; font-size: 1.5rem; margin-bottom: 0.25rem;">Register New Account</h1>
+                <p id="cardSubtitle" class="subtitle" style="text-align: left; margin-bottom: 2rem;">Create a role-based user account</p>
+
+                <form id="registerForm" autocomplete="off">
+                    <div class="form-group">
+                        <label id="lblUsername" for="regUsername">Username</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            </span>
+                            <input type="text" id="regUsername" class="form-control" placeholder="Enter username" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label id="lblPassword" for="regPassword">Password</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            </span>
+                            <input type="password" id="regPassword" class="form-control" placeholder="••••••••" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label id="lblRole" for="regRole">Role</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            </span>
+                            <select id="regRole" class="form-control" required>
+                                <option value="Teacher">Teacher</option>
+                                <option value="Principal">Principal</option>
+                                <option value="Parent">Parent</option>
+                                <option value="Student">Student</option>
+                                <option value="Admin">Admin</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label id="lblLinkedId" for="regLinkedId">Linked ID</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                            </span>
+                            <input type="text" id="regLinkedId" class="form-control" placeholder="e.g. T001, STU001" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label id="lblChatId" for="regChatId">Telegram Chat ID</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                            </span>
+                            <input type="text" id="regChatId" class="form-control" placeholder="e.g. 123456789" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="createBtn" class="btn btn-primary" style="margin-top: 1rem;">
+                        <span id="btnText">Create Account</span>
+                        <div id="btnSpinner" class="spinner hidden"></div>
+                    </button>
+                </form>
+            </section>
+        </div>
+
+        <!-- Tab 2: Student Management Content -->
+        <div id="studentsTabContent" class="tab-content">
+            <section class="table-card" style="margin-top: 1rem;">
+                <div class="controls-card" style="border-radius: 0; border: none; border-bottom: 1px solid var(--card-border); background: rgba(15, 23, 42, 0.2);">
+                    <h2 id="studentListTitle" style="font-size: 1.3rem; font-weight: 700; background: linear-gradient(to right, #ffffff, #a5b4fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Students Directory</h2>
+                    <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-right: 0.5rem;">
+                            <label id="lblFilterClass" for="filterClassSelect" style="font-size: 0.9rem; color: var(--text-secondary); font-weight: 500;">Filter Class:</label>
+                            <select id="filterClassSelect" class="lang-select" style="background: rgba(15, 23, 42, 0.8); padding: 0.4rem 0.8rem; border-radius: 8px;">
+                                <option value="all">All Classes</option>
+                            </select>
+                        </div>
+                        <button id="importLinkBtn" class="btn btn-secondary" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.25rem;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                            <span id="btnImportLinkText">Import from Link</span>
+                        </button>
+                        <label for="excelUpload" class="btn btn-secondary" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; cursor: pointer; margin: 0; display: inline-flex; align-items: center; gap: 0.25rem;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                            <span id="btnImportExcelText">Upload Excel/CSV</span>
+                        </label>
+                        <input type="file" id="excelUpload" accept=".xlsx, .xls, .csv" style="display: none;">
+                        <button id="exportExcelBtn" class="btn btn-secondary" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.25rem;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            <span id="btnExportExcelText">Export Excel</span>
+                        </button>
+                        <button id="restoreAllStudentsBtn" class="btn btn-success hidden" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; background: linear-gradient(135deg, #10b981, #047857); border-color: #10b981; display: inline-flex; align-items: center; gap: 0.25rem;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
+                            <span id="btnRestoreAllText">Restore All</span>
+                        </button>
+                        <button id="deleteAllStudentsBtn" class="btn btn-danger" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; background: linear-gradient(135deg, #ef4444, #b91c1c); border-color: #ef4444; display: inline-flex; align-items: center; gap: 0.25rem;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                            <span id="btnDeleteAllText">Delete All</span>
+                        </button>
+                        <button id="addStudentBtn" class="btn btn-primary" style="width: auto; padding: 0.5rem 1.25rem; font-size: 0.9rem;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.25rem;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            <span id="btnAddStudentText">Add Student</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="attendance-table" id="studentsTable">
+                        <thead>
+                            <tr>
+                                <th id="thStudentId">ID</th>
+                                <th id="thStudentName">Name</th>
+                                <th id="thStudentClass">Class</th>
+                                <th id="thStudentAbsences" style="text-align: center;">Total Absences</th>
+                                <th id="thParentChat">Parent Chat ID</th>
+                                <th id="thTeacherChat">Teacher Chat ID</th>
+                                <th id="thPrincipalChat">Principal Chat ID</th>
+                                <th id="thActions" style="text-align: center;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentTableBody">
+                            <!-- Populated dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Add/Edit Student Modal -->
+    <div id="studentModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle" class="modal-title">Add New Student</h3>
+                <button id="closeModalBtn" class="close-modal-btn">&times;</button>
+            </div>
+            <form id="studentForm" autocomplete="off">
+                <input type="hidden" id="studentAction" value="add">
+                
+                <div class="form-group">
+                    <label id="lblModalStudentId" for="stuId">Student ID</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                        </span>
+                        <input type="text" id="stuId" class="form-control" placeholder="e.g. STU001" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label id="lblModalStudentName" for="stuName">Student Name</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </span>
+                        <input type="text" id="stuName" class="form-control" placeholder="Enter full name" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label id="lblModalStudentClass" for="stuClass">Class</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg>
+                        </span>
+                        <input type="text" id="stuClass" class="form-control" placeholder="e.g. 7A" required>
+                    </div>
+                </div>
+
+                <div class="form-group" id="absencesGroup">
+                    <label id="lblModalAbsences" for="stuAbsences">Total Absences</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        </span>
+                        <input type="number" id="stuAbsences" class="form-control" min="0" value="0" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label id="lblModalParentChat" for="stuParentChat">Parent Chat ID</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                        </span>
+                        <input type="text" id="stuParentChat" class="form-control" placeholder="e.g. 111222333" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label id="lblModalTeacherChat" for="stuTeacherChat">Teacher Chat ID</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                        </span>
+                        <input type="text" id="stuTeacherChat" class="form-control" placeholder="e.g. 123456789" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label id="lblModalPrincipalChat" for="stuPrincipalChat">Principal Chat ID</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                        </span>
+                        <input type="text" id="stuPrincipalChat" class="form-control" placeholder="e.g. 987654321" required>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" id="cancelModalBtn" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" id="saveStudentBtn" class="btn btn-primary">
+                        <span id="btnModalSaveText">Save Student</span>
+                        <div id="modalSpinner" class="spinner hidden"></div>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Student Absences Details Modal -->
+    <div id="studentDetailsModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 id="detailsModalTitle" class="modal-title">Absence History Details</h3>
+                <button id="closeDetailsModalBtn" class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 1.5rem 0;">
+                <div style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--card-border); padding-bottom: 1rem;">
+                    <p style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 0.25rem;"><span id="lblDetailStudentId">Student ID:</span> <strong id="detailStuIdVal" style="color: white;">-</strong></p>
+                    <p style="font-size: 0.95rem; color: var(--text-secondary);"><span id="lblDetailStudentName">Student Name:</span> <strong id="detailStuNameVal" style="color: white;">-</strong></p>
+                </div>
+                <h4 id="lblAbsenceDatesTitle" style="font-size: 1.1rem; margin-bottom: 0.75rem; color: #a5b4fc;">Absence Dates & Notes</h4>
+                <div id="absenceHistoryList" style="max-height: 250px; overflow-y: auto; padding-right: 0.5rem;">
+                    <!-- Absence records listed here -->
+                </div>
+            </div>
+            <div class="modal-footer" style="padding-top: 1rem; border-top: 1px solid var(--card-border);">
+                <button type="button" id="closeDetailsModalBtn2" class="btn btn-secondary">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Client-side Logic Script -->
+    <script src="/js/admin.js"></script>
+</body>
+</html>

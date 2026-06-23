@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard - Attendance Portal</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <!-- Glow Background Blobs -->
+    <div class="glow-blob glow-1"></div>
+    <div class="glow-blob glow-2"></div>
+
+    <!-- Alert Toast Notification Area -->
+    <div id="alertBanner" class="alert-banner alert-success">
+        <span id="alertIcon">✓</span>
+        <span id="alertMessage">Success Message Here</span>
+    </div>
+
+    <!-- Main Workspace Container -->
+    <div class="dashboard-container">
+        <!-- Dashboard Header -->
+        <header class="dashboard-header">
+            <div class="dashboard-title-area">
+                <h1 id="teacherTitle">Teacher Workspace</h1>
+                <div class="user-info">
+                    <span id="loggedInLabel">Logged in as: </span><strong id="usernameLabel">...</strong>
+                    <span id="roleBadge" class="user-role-badge">Teacher</span>
+                </div>
+            </div>
+            
+            <div class="header-actions">
+                <div class="lang-selector-container" style="position: static; margin-right: 0.5rem;">
+                    <select id="langSelect" class="lang-select">
+                        <option value="en">EN</option>
+                        <option value="km">KM</option>
+                    </select>
+                </div>
+                <button id="logoutBtn" class="logout-btn">Sign Out</button>
+            </div>
+        </header>
+
+        <!-- Controls Card (Date Selection & Meta info) -->
+        <section class="controls-card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                <div class="date-selector">
+                    <label id="lblAttendanceDate" for="attendanceDate">Attendance Date:</label>
+                    <input type="date" id="attendanceDate" class="date-input" required>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <label id="lblFilterClass" for="filterClassSelect" style="font-size: 0.9rem; color: var(--text-secondary); font-weight: 500;">Filter Class:</label>
+                    <select id="filterClassSelect" class="lang-select" style="background: rgba(15, 23, 42, 0.8); padding: 0.4rem 0.8rem; border-radius: 8px;">
+                        <option value="all">All Classes</option>
+                    </select>
+                </div>
+            </div>
+            <div id="lblWarningNotice" style="color: var(--text-secondary); font-size: 0.9rem;">
+                * System triggers telegram notifications to parents/principals if a student reaches 5 absences.
+            </div>
+        </section>
+
+        <!-- Students Attendance Grid Card -->
+        <section class="table-card">
+            <div class="table-responsive">
+                <table class="attendance-table" id="attendanceTable">
+                    <thead>
+                        <tr>
+                            <th id="thStudentInfo">Student Info</th>
+                            <th id="thStudentClass">Class</th>
+                            <th id="thTotalAbsences" style="text-align: center;">Total Absences</th>
+                            <th id="thStatus">Status (Select One)</th>
+                            <th id="thNotes">Notes / Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentTableBody">
+                        <!-- Loaded dynamically via JS -->
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: var(--text-secondary); padding: 3rem;">
+                                <div class="spinner" style="margin-bottom: 1rem;"></div>
+                                <p>Loading student roster...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Table Save Footer -->
+            <div class="table-footer">
+                <div class="submit-container">
+                    <button id="submitAttendanceBtn" class="btn btn-primary" disabled>
+                        <span id="btnSubmitText">Submit Attendance</span>
+                        <div id="submitSpinner" class="spinner hidden"></div>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Client-side Logic Script -->
+    <script src="/js/teacher.js"></script>
+</body>
+</html>

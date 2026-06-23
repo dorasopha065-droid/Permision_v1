@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Principal Dashboard - Attendance Portal</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- SheetJS for client-side Excel/CSV generation -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+    <!-- Glow Background Blobs -->
+    <div class="glow-blob glow-1"></div>
+    <div class="glow-blob glow-2"></div>
+
+    <!-- Alert Toast Notification Area -->
+    <div id="alertBanner" class="alert-banner alert-success">
+        <span id="alertIcon">✓</span>
+        <span id="alertMessage">Success Message Here</span>
+    </div>
+
+    <div class="dashboard-container" style="max-width: 1000px;">
+        <!-- Dashboard Header -->
+        <header class="dashboard-header">
+            <div class="dashboard-title-area">
+                <h1 id="principalTitle">Principal Workspace</h1>
+                <div class="user-info">
+                    <span id="loggedInLabel">Logged in as: </span><strong id="usernameLabel">...</strong>
+                    <span id="roleBadge" class="user-role-badge">Principal</span>
+                </div>
+            </div>
+            
+            <div class="header-actions">
+                <div class="lang-selector-container" style="position: static; margin-right: 0.5rem;">
+                    <select id="langSelect" class="lang-select">
+                        <option value="en">EN</option>
+                        <option value="km">KM</option>
+                    </select>
+                </div>
+                <button id="logoutBtn" class="logout-btn">Sign Out</button>
+            </div>
+        </header>
+
+        <!-- Tab Switcher -->
+        <div class="tab-container">
+            <button id="tabStudents" class="tab-btn active">Manage Students</button>
+        </div>
+
+        <!-- Student Management Content -->
+        <div id="studentsTabContent" class="tab-content active" style="display: block;">
+            <section class="table-card" style="margin-top: 1rem;">
+                <div class="controls-card" style="border-radius: 0; border: none; border-bottom: 1px solid var(--card-border); background: rgba(15, 23, 42, 0.2);">
+                    <h2 id="studentListTitle" style="font-size: 1.3rem; font-weight: 700; background: linear-gradient(to right, #ffffff, #a5b4fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Students Directory</h2>
+                    <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-right: 0.5rem;">
+                            <label id="lblFilterClass" for="filterClassSelect" style="font-size: 0.9rem; color: var(--text-secondary); font-weight: 500;">Filter Class:</label>
+                            <select id="filterClassSelect" class="lang-select" style="background: rgba(15, 23, 42, 0.8); padding: 0.4rem 0.8rem; border-radius: 8px;">
+                                <option value="all">All Classes</option>
+                            </select>
+                        </div>
+                        <button id="exportExcelBtn" class="btn btn-secondary" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.25rem;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            <span id="btnExportExcelText">Export Excel</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="attendance-table" id="studentsTable">
+                        <thead>
+                            <tr>
+                                <th id="thStudentId">ID</th>
+                                <th id="thStudentName">Name</th>
+                                <th id="thStudentClass">Class</th>
+                                <th id="thStudentAbsences" style="text-align: center;">Total Absences</th>
+                                <th id="thActions" style="text-align: center;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentTableBody">
+                            <!-- Populated dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Student Absences Details Modal -->
+    <div id="studentDetailsModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 id="detailsModalTitle" class="modal-title">Absence History Details</h3>
+                <button id="closeDetailsModalBtn" class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 1.5rem 0;">
+                <div style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--card-border); padding-bottom: 1rem;">
+                    <p style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 0.25rem;"><span id="lblDetailStudentId">Student ID:</span> <strong id="detailStuIdVal" style="color: white;">-</strong></p>
+                    <p style="font-size: 0.95rem; color: var(--text-secondary);"><span id="lblDetailStudentName">Student Name:</span> <strong id="detailStuNameVal" style="color: white;">-</strong></p>
+                </div>
+                <h4 id="lblAbsenceDatesTitle" style="font-size: 1.1rem; margin-bottom: 0.75rem; color: #a5b4fc;">Absence Dates & Notes</h4>
+                <div id="absenceHistoryList" style="max-height: 250px; overflow-y: auto; padding-right: 0.5rem;">
+                    <!-- Absence records listed here -->
+                </div>
+            </div>
+            <div class="modal-footer" style="padding-top: 1rem; border-top: 1px solid var(--card-border);">
+                <button type="button" id="closeDetailsModalBtn2" class="btn btn-secondary">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Client-side Logic Script -->
+    <script src="/js/principal.js"></script>
+</body>
+</html>

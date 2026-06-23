@@ -1,0 +1,46 @@
+# ========================
+# Python
+# ========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+
+# ========================
+# Secrets & Credentials
+# ========================
+.env
+credentials.json
+
+# ========================
+# IDE / Editor
+# ========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ========================
+# OS Generated
+# ========================
+Desktop.ini
+ehthumbs.db
+*.lnk
+
+# ========================
+# Logs
+# ========================
+*.log
