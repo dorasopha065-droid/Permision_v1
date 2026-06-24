@@ -62,7 +62,11 @@ const initPrincipal = () => {
             lblFilterMonth: "Month:",
             optAllAbsences: "All Students",
             optAny5: "Absences >= 5 in Any Month",
-            optMonth5: "Absences >= 5 in Specific Month"
+            optMonth5: "Absences >= 5 in Specific Month",
+            lblSortStudents: "Sort By:",
+            optSortId: "Student ID",
+            optSortName: "Family Name",
+            optSortClass: "Class"
         },
         km: {
             principalTitle: "ផ្ទាំងគ្រប់គ្រង នាយកសាលា",
@@ -87,7 +91,11 @@ const initPrincipal = () => {
             lblFilterMonth: "ខែ៖",
             optAllAbsences: "សិស្សទាំងអស់",
             optAny5: "អវត្តមាន >= ៥ដង ក្នុងខែណាមួយ",
-            optMonth5: "អវត្តមាន >= ៥ដង ក្នុងខែជាក់លាក់"
+            optMonth5: "អវត្តមាន >= ៥ដង ក្នុងខែជាក់លាក់",
+            lblSortStudents: "តម្រៀបតាម៖",
+            optSortId: "អត្តលេខ",
+            optSortName: "ត្រកូល/ឈ្មោះ",
+            optSortClass: "ថ្នាក់"
         }
     };
 
@@ -175,6 +183,15 @@ const initPrincipal = () => {
         if (thStudentClassEl) thStudentClassEl.textContent = trans.thStudentClass;
         document.getElementById("thStudentAbsences").textContent = trans.thStudentAbsences;
         document.getElementById("thActions").textContent = trans.thActions;
+
+        const lblSortStudentsEl = document.getElementById("lblSortStudents");
+        if (lblSortStudentsEl) lblSortStudentsEl.textContent = trans.lblSortStudents;
+        const optSortIdEl = document.getElementById("optSortId");
+        if (optSortIdEl) optSortIdEl.textContent = trans.optSortId;
+        const optSortNameEl = document.getElementById("optSortName");
+        if (optSortNameEl) optSortNameEl.textContent = trans.optSortName;
+        const optSortClassEl = document.getElementById("optSortClass");
+        if (optSortClassEl) optSortClassEl.textContent = trans.optSortClass;
 
         // Absences filters elements
         const lblFilterAbsenceEl = document.getElementById("lblFilterAbsence");
@@ -328,7 +345,24 @@ const initPrincipal = () => {
             });
         }
 
-        if (filteredStudents.length === 0) {
+        // Sort logic
+        const sortSelect = document.getElementById("sortStudentsSelect");
+        const sortBy = sortSelect ? sortSelect.value : "id";
+        
+        let sortedStudents = [...filteredStudents];
+        if (sortBy === "id") {
+            sortedStudents.sort((a, b) => a.student_id.localeCompare(b.student_id));
+        } else if (sortBy === "name") {
+            sortedStudents.sort((a, b) => a.student_name.localeCompare(b.student_name, currentLang === 'km' ? 'km' : 'en'));
+        } else if (sortBy === "class") {
+            sortedStudents.sort((a, b) => {
+                const classA = a.class || a.student_class || '';
+                const classB = b.class || b.student_class || '';
+                return classA.localeCompare(classB);
+            });
+        }
+
+        if (sortedStudents.length === 0) {
             studentTableBody.innerHTML = `
                 <tr>
                     <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">
@@ -340,7 +374,7 @@ const initPrincipal = () => {
         }
 
         studentTableBody.innerHTML = "";
-        filteredStudents.forEach(student => {
+        sortedStudents.forEach(student => {
             const tr = document.createElement("tr");
 
             // Absence pill styling (warning if absences >= 5)
@@ -481,6 +515,14 @@ const initPrincipal = () => {
     const filterClassSelect = document.getElementById("filterClassSelect");
     if (filterClassSelect) {
         filterClassSelect.addEventListener("change", () => {
+            renderStudentTable();
+        });
+    }
+
+    // Sort Students change listener
+    const sortStudentsSelect = document.getElementById("sortStudentsSelect");
+    if (sortStudentsSelect) {
+        sortStudentsSelect.addEventListener("change", () => {
             renderStudentTable();
         });
     }

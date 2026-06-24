@@ -179,6 +179,14 @@
                             </select>
                         </div>
                         <div style="display: flex; align-items: center; gap: 0.5rem; margin-right: 0.5rem;">
+                            <label id="lblSortStudents" for="sortStudentsSelect" style="font-size: 0.9rem; color: var(--text-secondary); font-weight: 500;">Sort By:</label>
+                            <select id="sortStudentsSelect" class="lang-select" style="background: rgba(15, 23, 42, 0.8); padding: 0.4rem 0.8rem; border-radius: 8px;">
+                                <option id="optSortId" value="id">Student ID</option>
+                                <option id="optSortName" value="name">Family Name</option>
+                                <option id="optSortClass" value="class">Class</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-right: 0.5rem;">
                             <label id="lblFilterAbsence" for="filterAbsenceSelect" style="font-size: 0.9rem; color: var(--text-secondary); font-weight: 500;">Absences Filter:</label>
                             <select id="filterAbsenceSelect" class="lang-select" style="background: rgba(15, 23, 42, 0.8); padding: 0.4rem 0.8rem; border-radius: 8px;">
                                 <option id="optAllAbsences" value="all">All Students</option>

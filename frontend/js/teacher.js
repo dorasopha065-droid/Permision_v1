@@ -52,6 +52,10 @@ const initTeacher = () => {
             lblAttendanceDate: "Attendance Date:",
             lblFilterClass: "Filter Class:",
             lblSubject: "Subject:",
+            lblSortStudents: "Sort By:",
+            optSortId: "Student ID",
+            optSortName: "Family Name",
+            optSortClass: "Class",
             lblWarningNotice: "* System triggers telegram notifications to parents/principals if a student reaches 5 absences.",
             thStudentInfo: "Student Info",
             thStudentClass: "Class",
@@ -81,6 +85,10 @@ const initTeacher = () => {
             lblAttendanceDate: "កាលបរិច្ឆេទវត្តមាន៖",
             lblFilterClass: "ស្វែងរកតាមថ្នាក់៖",
             lblSubject: "មុខវិជ្ជា៖",
+            lblSortStudents: "តម្រៀបតាម៖",
+            optSortId: "អត្តលេខ",
+            optSortName: "ត្រកូល/ឈ្មោះ",
+            optSortClass: "ថ្នាក់",
             lblWarningNotice: "* ប្រព័ន្ធនឹងបញ្ជូនសារដំណឹងទៅកាន់តេឡេក្រាមរបស់មាតាបិតា/នាយកសាលា ប្រសិនបើសិស្សអវត្តមានចាប់ពី ៥ ថ្ងៃឡើងទៅ។",
             thStudentInfo: "ព័ត៌មានសិស្ស",
             thStudentClass: "ថ្នាក់",
@@ -147,6 +155,16 @@ const initTeacher = () => {
         if (lblFilterClassEl) lblFilterClassEl.textContent = trans.lblFilterClass;
         const lblSubjectEl = document.getElementById("lblSubject");
         if (lblSubjectEl) lblSubjectEl.textContent = trans.lblSubject;
+        
+        const lblSortStudentsEl = document.getElementById("lblSortStudents");
+        if (lblSortStudentsEl) lblSortStudentsEl.textContent = trans.lblSortStudents;
+        const optSortIdEl = document.getElementById("optSortId");
+        if (optSortIdEl) optSortIdEl.textContent = trans.optSortId;
+        const optSortNameEl = document.getElementById("optSortName");
+        if (optSortNameEl) optSortNameEl.textContent = trans.optSortName;
+        const optSortClassEl = document.getElementById("optSortClass");
+        if (optSortClassEl) optSortClassEl.textContent = trans.optSortClass;
+        
         lblWarningNotice.textContent = trans.lblWarningNotice;
         thStudentInfo.textContent = trans.thStudentInfo;
         const thStudentClassEl = document.getElementById("thStudentClass");
@@ -268,7 +286,24 @@ const initTeacher = () => {
             ? students
             : students.filter(student => (student.class || student.student_class) === selectedClass);
 
-        if (!filteredStudents || filteredStudents.length === 0) {
+        // Sort logic
+        const sortSelect = document.getElementById("sortStudentsSelect");
+        const sortBy = sortSelect ? sortSelect.value : "id";
+        
+        let sortedStudents = [...filteredStudents];
+        if (sortBy === "id") {
+            sortedStudents.sort((a, b) => a.student_id.localeCompare(b.student_id));
+        } else if (sortBy === "name") {
+            sortedStudents.sort((a, b) => a.student_name.localeCompare(b.student_name, currentLang === 'km' ? 'km' : 'en'));
+        } else if (sortBy === "class") {
+            sortedStudents.sort((a, b) => {
+                const classA = a.class || a.student_class || '';
+                const classB = b.class || b.student_class || '';
+                return classA.localeCompare(classB);
+            });
+        }
+
+        if (!sortedStudents || sortedStudents.length === 0) {
             studentTableBody.innerHTML = `
                 <tr>
                     <td colspan="5" style="text-align: center; padding: 3rem;">
@@ -294,7 +329,7 @@ const initTeacher = () => {
 
         studentTableBody.innerHTML = "";
         
-        filteredStudents.forEach(student => {
+        sortedStudents.forEach(student => {
             const tr = document.createElement("tr");
             tr.setAttribute("data-student-id", student.student_id);
 
@@ -430,6 +465,14 @@ const initTeacher = () => {
     const filterClassSelect = document.getElementById("filterClassSelect");
     if (filterClassSelect) {
         filterClassSelect.addEventListener("change", () => {
+            renderStudents(currentStudentsList);
+        });
+    }
+
+    // Sort Students change listener
+    const sortStudentsSelect = document.getElementById("sortStudentsSelect");
+    if (sortStudentsSelect) {
+        sortStudentsSelect.addEventListener("change", () => {
             renderStudents(currentStudentsList);
         });
     }

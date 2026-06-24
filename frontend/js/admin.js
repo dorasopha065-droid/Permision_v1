@@ -139,6 +139,10 @@ const initAdmin = () => {
             tabStudents: "Manage Students",
             studentListTitle: "Students Directory",
             btnAddStudentText: "Add Student",
+            lblSortStudents: "Sort By:",
+            optSortId: "Student ID",
+            optSortName: "Family Name",
+            optSortClass: "Class",
             thStudentId: "ID",
             thStudentName: "Name",
             thStudentClass: "Class",
@@ -237,6 +241,10 @@ const initAdmin = () => {
             tabStudents: "គ្រប់គ្រងសិស្ស",
             studentListTitle: "បញ្ជីឈ្មោះសិស្ស",
             btnAddStudentText: "បន្ថែមសិស្ស",
+            lblSortStudents: "តម្រៀបតាម៖",
+            optSortId: "អត្តលេខ",
+            optSortName: "ត្រកូល/ឈ្មោះ",
+            optSortClass: "ថ្នាក់",
             thStudentId: "អត្តសញ្ញាណ",
             thStudentName: "ឈ្មោះសិស្ស",
             thStudentClass: "ថ្នាក់",
@@ -411,6 +419,15 @@ const initAdmin = () => {
         // Students directory elements
         document.getElementById("studentListTitle").textContent = trans.studentListTitle;
         document.getElementById("btnAddStudentText").textContent = trans.btnAddStudentText;
+        
+        const lblSortStudentsEl = document.getElementById("lblSortStudents");
+        if (lblSortStudentsEl) lblSortStudentsEl.textContent = trans.lblSortStudents;
+        const optSortIdEl = document.getElementById("optSortId");
+        if (optSortIdEl) optSortIdEl.textContent = trans.optSortId;
+        const optSortNameEl = document.getElementById("optSortName");
+        if (optSortNameEl) optSortNameEl.textContent = trans.optSortName;
+        const optSortClassEl = document.getElementById("optSortClass");
+        if (optSortClassEl) optSortClassEl.textContent = trans.optSortClass;
         const btnDeleteAllTextEl = document.getElementById("btnDeleteAllText");
         if (btnDeleteAllTextEl) {
             btnDeleteAllTextEl.textContent = hasTrashActive ? trans.btnDeletePermanently : trans.btnDeleteAll;
@@ -771,7 +788,24 @@ const initAdmin = () => {
             ? studentsList
             : studentsList.filter(student => (student.class || student.student_class) === selectedClass);
 
-        if (filteredStudents.length === 0) {
+        // Sort logic
+        const sortSelect = document.getElementById("sortStudentsSelect");
+        const sortBy = sortSelect ? sortSelect.value : "id";
+        
+        let sortedStudents = [...filteredStudents];
+        if (sortBy === "id") {
+            sortedStudents.sort((a, b) => a.student_id.localeCompare(b.student_id));
+        } else if (sortBy === "name") {
+            sortedStudents.sort((a, b) => a.student_name.localeCompare(b.student_name, currentLang === 'km' ? 'km' : 'en'));
+        } else if (sortBy === "class") {
+            sortedStudents.sort((a, b) => {
+                const classA = a.class || a.student_class || '';
+                const classB = b.class || b.student_class || '';
+                return classA.localeCompare(classB);
+            });
+        }
+
+        if (sortedStudents.length === 0) {
             studentTableBody.innerHTML = `
                 <tr>
                     <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">
@@ -783,7 +817,7 @@ const initAdmin = () => {
         }
 
         studentTableBody.innerHTML = "";
-        filteredStudents.forEach(student => {
+        sortedStudents.forEach(student => {
             const tr = document.createElement("tr");
 
             // Format Chat IDs display (handle nan values)
@@ -1048,6 +1082,14 @@ const initAdmin = () => {
     const filterClassSelect = document.getElementById("filterClassSelect");
     if (filterClassSelect) {
         filterClassSelect.addEventListener("change", () => {
+            renderStudentTable();
+        });
+    }
+
+    // Sort Students change listener
+    const sortStudentsSelect = document.getElementById("sortStudentsSelect");
+    if (sortStudentsSelect) {
+        sortStudentsSelect.addEventListener("change", () => {
             renderStudentTable();
         });
     }
