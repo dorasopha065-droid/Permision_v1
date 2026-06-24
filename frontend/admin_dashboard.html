@@ -4,14 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Attendance Portal</title>
+    <!-- Static Stylesheet to prevent Flash of Unstyled Content (FOUC) -->
+    <link rel="stylesheet" href="/css/style.css" id="mainStylesheet">
     <script>
-        (function() {
-            const prefix = window.location.protocol === 'file:' ? '' : '/';
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = prefix + 'css/style.css';
-            document.head.appendChild(link);
-        })();
+        if (window.location.protocol === 'file:') {
+            document.getElementById('mainStylesheet').setAttribute('href', 'css/style.css');
+        }
     </script>
     <!-- SheetJS for client-side Excel/CSV parsing -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -56,77 +54,116 @@
         <div class="tab-container">
             <button id="tabUsers" class="tab-btn active">User Accounts</button>
             <button id="tabStudents" class="tab-btn">Manage Students</button>
+            <button id="tabSettings" class="tab-btn">System Settings</button>
         </div>
 
         <!-- Tab 1: User Accounts Content -->
         <div id="usersTabContent" class="tab-content active">
-            <section class="glass-card" style="max-width: 600px; margin: 1rem auto 0 auto; padding: 2.5rem 2rem;">
-                <h1 id="cardTitle" style="text-align: left; font-size: 1.5rem; margin-bottom: 0.25rem;">Register New Account</h1>
-                <p id="cardSubtitle" class="subtitle" style="text-align: left; margin-bottom: 2rem;">Create a role-based user account</p>
+            <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 1rem; align-items: flex-start;">
+                <!-- Register Card -->
+                <section class="glass-card" style="flex: 1; min-width: 320px; padding: 2rem 1.5rem; margin: 0;">
+                    <h1 id="cardTitle" style="text-align: left; font-size: 1.5rem; margin-bottom: 0.25rem;">Register New Account</h1>
+                    <p id="cardSubtitle" class="subtitle" style="text-align: left; margin-bottom: 2rem;">Create a role-based user account</p>
 
-                <form id="registerForm" autocomplete="off">
-                    <div class="form-group">
-                        <label id="lblUsername" for="regUsername">Username</label>
-                        <div class="input-wrapper">
-                            <span class="input-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                            </span>
-                            <input type="text" id="regUsername" class="form-control" placeholder="Enter username" required>
+                    <form id="registerForm" autocomplete="off">
+                        <div class="form-group">
+                            <label id="lblUsername" for="regUsername">Username</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                </span>
+                                <input type="text" id="regUsername" class="form-control" placeholder="Enter username" required>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="form-group">
-                        <label id="lblPassword" for="regPassword">Password</label>
-                        <div class="input-wrapper">
-                            <span class="input-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                            </span>
-                            <input type="password" id="regPassword" class="form-control" placeholder="••••••••" required>
+                        <div class="form-group">
+                            <label id="lblPassword" for="regPassword">Password</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                </span>
+                                <input type="password" id="regPassword" class="form-control" placeholder="••••••••" required>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="form-group">
-                        <label id="lblRole" for="regRole">Role</label>
-                        <div class="input-wrapper">
-                            <span class="input-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                            </span>
-                            <select id="regRole" class="form-control" required>
-                                <option value="Teacher">Teacher</option>
-                                <option value="Principal">Principal</option>
-                                <option value="Parent">Parent</option>
-                                <option value="Student">Student</option>
-                                <option value="Admin">Admin</option>
-                            </select>
+                        <div class="form-group">
+                            <label id="lblRole" for="regRole">Role</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                </span>
+                                <select id="regRole" class="form-control" required>
+                                    <option value="Teacher">Teacher</option>
+                                    <option value="Principal">Principal</option>
+                                    <option value="Parent">Parent</option>
+                                    <option value="Student">Student</option>
+                                    <option value="Admin">Admin</option>
+                                </select>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="form-group">
-                        <label id="lblLinkedId" for="regLinkedId">Linked ID</label>
-                        <div class="input-wrapper">
-                            <span class="input-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
-                            </span>
-                            <input type="text" id="regLinkedId" class="form-control" placeholder="e.g. T001, STU001" required>
+                        <div class="form-group">
+                            <label id="lblLinkedId" for="regLinkedId">Linked ID</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                                </span>
+                                <input type="text" id="regLinkedId" class="form-control" placeholder="e.g. T001, STU001" required>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="form-group">
-                        <label id="lblChatId" for="regChatId">Telegram Chat ID</label>
-                        <div class="input-wrapper">
-                            <span class="input-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                            </span>
-                            <input type="text" id="regChatId" class="form-control" placeholder="e.g. 123456789" required>
+                        <div class="form-group">
+                            <label id="lblChatId" for="regChatId">Telegram Chat ID</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                                </span>
+                                <input type="text" id="regChatId" class="form-control" placeholder="e.g. 123456789" required>
+                            </div>
                         </div>
-                    </div>
 
-                    <button type="submit" id="createBtn" class="btn btn-primary" style="margin-top: 1rem;">
-                        <span id="btnText">Create Account</span>
-                        <div id="btnSpinner" class="spinner hidden"></div>
-                    </button>
-                </form>
-            </section>
+                        <div class="form-group" id="classGroup" style="display: none;">
+                            <label id="lblUserClass" for="regClass">Class (Teacher only)</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg>
+                                </span>
+                                <input type="text" id="regClass" class="form-control" placeholder="e.g. 7A">
+                            </div>
+                        </div>
+
+                        <button type="submit" id="createBtn" class="btn btn-primary" style="margin-top: 1rem;">
+                            <span id="btnText">Create Account</span>
+                            <div id="btnSpinner" class="spinner hidden"></div>
+                        </button>
+                    </form>
+                </section>
+
+                <!-- Users Directory Table -->
+                <section class="table-card" style="flex: 2; min-width: 500px; margin: 0; padding: 0;">
+                    <div class="controls-card" style="border-radius: 0; border: none; border-bottom: 1px solid var(--card-border); background: rgba(15, 23, 42, 0.2); padding: 1.5rem 1.5rem 1rem 1.5rem;">
+                        <h2 id="usersListTitle" style="font-size: 1.3rem; font-weight: 700; background: linear-gradient(to right, #ffffff, #a5b4fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0;">Users Directory</h2>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="attendance-table" id="usersTable">
+                            <thead>
+                                <tr>
+                                    <th id="thUsername">Username</th>
+                                    <th id="thPassword">Password</th>
+                                    <th id="thRole">Role</th>
+                                    <th id="thLinkedId">Linked ID</th>
+                                    <th id="thUserChat">Telegram Chat ID</th>
+                                    <th id="thClass">Class</th>
+                                    <th id="thUserActions" style="text-align: center;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userTableBody">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
         </div>
 
         <!-- Tab 2: Student Management Content -->
@@ -141,6 +178,21 @@
                                 <option value="all">All Classes</option>
                             </select>
                         </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-right: 0.5rem;">
+                            <label id="lblFilterAbsence" for="filterAbsenceSelect" style="font-size: 0.9rem; color: var(--text-secondary); font-weight: 500;">Absences Filter:</label>
+                            <select id="filterAbsenceSelect" class="lang-select" style="background: rgba(15, 23, 42, 0.8); padding: 0.4rem 0.8rem; border-radius: 8px;">
+                                <option id="optAllAbsences" value="all">All Students</option>
+                                <option id="optAny5" value="any5">Absences >= 5 in Any Month</option>
+                                <option id="optMonth5" value="month5">Absences >= 5 in Specific Month</option>
+                            </select>
+                        </div>
+                        <div id="monthFilterContainer" style="display: none; align-items: center; gap: 0.5rem; margin-right: 0.5rem;">
+                            <label id="lblFilterMonth" for="filterMonthSelect" style="font-size: 0.9rem; color: var(--text-secondary); font-weight: 500;">Month:</label>
+                            <select id="filterMonthSelect" class="lang-select" style="background: rgba(15, 23, 42, 0.8); padding: 0.4rem 0.8rem; border-radius: 8px;">
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+
                         <button id="importLinkBtn" class="btn btn-secondary" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.25rem;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
                             <span id="btnImportLinkText">Import from Link</span>
@@ -189,6 +241,128 @@
                     </table>
                 </div>
             </section>
+        </div>
+
+        <!-- Tab 3: System Settings Content -->
+        <div id="settingsTabContent" class="tab-content">
+            <section class="glass-card" style="max-width: 600px; margin: 1rem auto 0 auto; padding: 2.5rem 2rem;">
+                <h1 id="settingsCardTitle" style="text-align: left; font-size: 1.5rem; margin-bottom: 0.25rem;">Telegram Integration</h1>
+                <p id="settingsCardSubtitle" class="subtitle" style="text-align: left; margin-bottom: 2rem;">Configure the active Telegram Bot Token</p>
+
+                <form id="telegramSettingsForm" autocomplete="off">
+                    <div class="form-group">
+                        <label id="lblCurrentBotToken" style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem; display: block;">Current Active Token</label>
+                        <div class="input-wrapper" style="opacity: 0.8; margin-bottom: 1.5rem;">
+                            <span class="input-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                            </span>
+                            <input type="text" id="currentBotTokenDisplay" class="form-control" value="Loading..." readonly style="background: rgba(15, 23, 42, 0.4); cursor: not-allowed; border-color: rgba(255, 255, 255, 0.05);">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label id="lblNewBotToken" for="newBotTokenInput">New Telegram Bot Token</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            </span>
+                            <input type="password" id="newBotTokenInput" class="form-control" placeholder="Enter new Telegram Bot Token" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="saveTelegramBtn" class="btn btn-primary" style="margin-top: 1rem;">
+                        <span id="btnSaveTelegramText">Update Token</span>
+                        <div id="saveTelegramSpinner" class="spinner hidden"></div>
+                    </button>
+                </form>
+            </section>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div id="userModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="userModalTitle" class="modal-title">Edit User Account</h3>
+                <button id="closeUserModalBtn" class="close-modal-btn">&times;</button>
+            </div>
+            <form id="userForm" autocomplete="off">
+                <input type="hidden" id="editUsername">
+                
+                <div class="form-group">
+                    <label id="lblModalUsername" for="userModalUsername">Username</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </span>
+                        <input type="text" id="userModalUsername" class="form-control" disabled readonly>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label id="lblModalPassword" for="userModalPassword">Password</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        </span>
+                        <input type="text" id="userModalPassword" class="form-control" placeholder="Enter password" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label id="lblModalRole" for="userModalRole">Role</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        </span>
+                        <select id="userModalRole" class="form-control" required>
+                            <option value="Teacher">Teacher</option>
+                            <option value="Principal">Principal</option>
+                            <option value="Parent">Parent</option>
+                            <option value="Student">Student</option>
+                            <option value="Admin">Admin</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label id="lblModalLinkedId" for="userModalLinkedId">Linked ID</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                        </span>
+                        <input type="text" id="userModalLinkedId" class="form-control" placeholder="e.g. T001" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label id="lblModalChatId" for="userModalChatId">Telegram Chat ID</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                        </span>
+                        <input type="text" id="userModalChatId" class="form-control" placeholder="e.g. 123456789" required>
+                    </div>
+                </div>
+
+                <div class="form-group" id="userModalClassGroup" style="display: none;">
+                    <label id="lblModalUserClass" for="userModalClass">Class (Teacher only)</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg>
+                        </span>
+                        <input type="text" id="userModalClass" class="form-control" placeholder="e.g. 7A">
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" id="cancelUserModalBtn" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" id="saveUserBtn" class="btn btn-primary">
+                        <span id="btnUserModalSaveText">Save Changes</span>
+                        <div id="userModalSpinner" class="spinner hidden"></div>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -306,14 +480,39 @@
         </div>
     </div>
 
+    <!-- Custom Confirmation Modal -->
+    <div id="confirmModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <div class="modal-header" style="justify-content: center; border: none; padding-bottom: 0;">
+                <div class="warning-icon-container" style="background: rgba(244, 63, 94, 0.1); color: #f43f5e; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                </div>
+            </div>
+            <div class="modal-body" style="padding: 0.5rem 0 1.5rem 0;">
+                <h3 id="confirmTitle" class="modal-title" style="font-size: 1.25rem; margin-bottom: 0.5rem; text-align: center;">Confirm Delete</h3>
+                <p id="confirmMessage" style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.5; margin: 0;"></p>
+                <div id="confirmPromptGroup" class="form-group hidden" style="margin-top: 1rem; margin-bottom: 0; text-align: left;">
+                    <label id="lblConfirmPrompt" for="confirmPromptInput" style="font-size: 0.8rem; margin-bottom: 0.5rem; display: block; text-transform: none; letter-spacing: normal;"></label>
+                    <input type="text" id="confirmPromptInput" class="form-control" style="padding-left: 1rem;">
+                </div>
+            </div>
+            <div class="modal-footer" style="justify-content: center; margin-top: 0; border: none; padding-top: 0;">
+                <button type="button" id="confirmCancelBtn" class="btn btn-secondary" style="width: auto; padding: 0.6rem 1.75rem;">Cancel</button>
+                <button type="button" id="confirmOkBtn" class="btn btn-danger" style="width: auto; padding: 0.6rem 1.75rem;">Delete</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Client-side Logic Script -->
     <script>
         (function() {
             const prefix = window.location.protocol === 'file:' ? '' : '/';
+            const bust = '?v=' + Date.now();
             function loadScript(src, cb) {
                 const s = document.createElement('script');
-                s.src = src;
+                s.src = src + bust;
                 s.onload = cb;
+                s.onerror = function() { console.error('Failed to load script:', src); };
                 document.body.appendChild(s);
             }
             loadScript(prefix + 'js/config.js', function() {

@@ -1,6 +1,6 @@
 // Client-side controller for principal_dashboard.html
 
-document.addEventListener("DOMContentLoaded", () => {
+const initPrincipal = () => {
     // Session Verification
     const sessionStr = localStorage.getItem("userSession");
     if (!sessionStr) {
@@ -57,7 +57,12 @@ document.addEventListener("DOMContentLoaded", () => {
             lblDetailStudentName: "Student Name:",
             lblAbsenceDatesTitle: "Absence Dates & Notes",
             detailsModalTitle: "Absence History Details",
-            errorConnect: "Failed to connect to server."
+            errorConnect: "Failed to connect to server.",
+            lblFilterAbsence: "Absences Filter:",
+            lblFilterMonth: "Month:",
+            optAllAbsences: "All Students",
+            optAny5: "Absences >= 5 in Any Month",
+            optMonth5: "Absences >= 5 in Specific Month"
         },
         km: {
             principalTitle: "ផ្ទាំងគ្រប់គ្រង នាយកសាលា",
@@ -77,9 +82,72 @@ document.addEventListener("DOMContentLoaded", () => {
             lblDetailStudentName: "ឈ្មោះសិស្ស៖",
             lblAbsenceDatesTitle: "កាលបរិច្ឆេទអវត្តមាន និងការចំណាំ",
             detailsModalTitle: "ព័ត៌មានលម្អិតអំពីអវត្តមាន",
-            errorConnect: "មិនអាចភ្ជាប់ទៅកាន់ម៉ាស៊ីនបម្រើបានទេ។"
+            errorConnect: "មិនអាចភ្ជាប់ទៅកាន់ម៉ាស៊ីនបម្រើបានទេ។",
+            lblFilterAbsence: "តម្រងអវត្តមាន៖",
+            lblFilterMonth: "ខែ៖",
+            optAllAbsences: "សិស្សទាំងអស់",
+            optAny5: "អវត្តមាន >= ៥ដង ក្នុងខែណាមួយ",
+            optMonth5: "អវត្តមាន >= ៥ដង ក្នុងខែជាក់លាក់"
         }
     };
+
+    function formatMonthKey(monthKey, lang) {
+        if (!monthKey || !monthKey.includes("-")) return monthKey;
+        const [year, month] = monthKey.split("-");
+        const monthNamesEn = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const monthNamesKm = ["មករា", "កុម្ភៈ", "មីនា", "មេសា", "ឧសភា", "មិថុនា", "កក្កដា", "សីហា", "កញ្ញា", "តុលា", "វិច្ឆិកា", "ធ្នូ"];
+        const idx = parseInt(month, 10) - 1;
+        if (idx < 0 || idx > 11) return monthKey;
+        if (lang === "km") {
+            return `${monthNamesKm[idx]} ${year}`;
+        }
+        return `${monthNamesEn[idx]} ${year}`;
+    }
+
+    // Populate Month Filter select options dynamically
+    function populateMonthFilter() {
+        const monthSelect = document.getElementById("filterMonthSelect");
+        if (!monthSelect) return;
+        
+        const currentSelection = monthSelect.value;
+        monthSelect.innerHTML = "";
+        
+        // Find all unique month keys
+        const monthKeys = [];
+        studentsList.forEach(s => {
+            if (s.monthly_absences) {
+                Object.keys(s.monthly_absences).forEach(k => {
+                    if (!monthKeys.includes(k)) {
+                        monthKeys.push(k);
+                    }
+                });
+            }
+        });
+        
+        // Sort chronologically descending
+        monthKeys.sort().reverse();
+        
+        if (monthKeys.length === 0) {
+            const opt = document.createElement("option");
+            opt.value = "";
+            opt.textContent = currentLang === 'km' ? 'គ្មានទិន្នន័យខែ' : 'No months available';
+            monthSelect.appendChild(opt);
+            return;
+        }
+        
+        monthKeys.forEach(mKey => {
+            const opt = document.createElement("option");
+            opt.value = mKey;
+            opt.textContent = formatMonthKey(mKey, currentLang);
+            monthSelect.appendChild(opt);
+        });
+        
+        if (monthKeys.includes(currentSelection)) {
+            monthSelect.value = currentSelection;
+        } else {
+            monthSelect.value = monthKeys[0];
+        }
+    }
 
     // Initialize Language from localStorage or default to 'en'
     let currentLang = localStorage.getItem("lang") || "en";
@@ -108,6 +176,19 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("thStudentAbsences").textContent = trans.thStudentAbsences;
         document.getElementById("thActions").textContent = trans.thActions;
 
+        // Absences filters elements
+        const lblFilterAbsenceEl = document.getElementById("lblFilterAbsence");
+        if (lblFilterAbsenceEl) lblFilterAbsenceEl.textContent = trans.lblFilterAbsence;
+        const lblFilterMonthEl = document.getElementById("lblFilterMonth");
+        if (lblFilterMonthEl) lblFilterMonthEl.textContent = trans.lblFilterMonth;
+        
+        const optAllAbsencesEl = document.getElementById("optAllAbsences");
+        if (optAllAbsencesEl) optAllAbsencesEl.textContent = trans.optAllAbsences;
+        const optAny5El = document.getElementById("optAny5");
+        if (optAny5El) optAny5El.textContent = trans.optAny5;
+        const optMonth5El = document.getElementById("optMonth5");
+        if (optMonth5El) optMonth5El.textContent = trans.optMonth5;
+
         // Details Modal elements
         const detailsModalTitleEl = document.getElementById("detailsModalTitle");
         if (detailsModalTitleEl) detailsModalTitleEl.textContent = trans.detailsModalTitle;
@@ -118,6 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const lblAbsenceDatesTitleEl = document.getElementById("lblAbsenceDatesTitle");
         if (lblAbsenceDatesTitleEl) lblAbsenceDatesTitleEl.textContent = trans.lblAbsenceDatesTitle;
 
+        populateMonthFilter();
         renderStudentTable();
     }
 
@@ -127,6 +209,7 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem("lang", currentLang);
         applyTranslations(currentLang);
     });
+
 
     // Alert toast helper
     function showNotification(message, isSuccess = true) {
@@ -155,12 +238,13 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
 
         try {
-            const response = await fetch(CONFIG.getApiUrl("/api/students"));
+            const response = await fetch(CONFIG.getApiUrl("/api/reports/monthly-absences"));
             const data = await response.json();
 
             if (response.ok && data.students) {
                 studentsList = data.students;
                 populateClassFilter();
+                populateMonthFilter();
                 renderStudentTable();
             } else {
                 showNotification(data.detail || "Failed to load students", false);
@@ -206,9 +290,43 @@ document.addEventListener("DOMContentLoaded", () => {
         const filterSelect = document.getElementById("filterClassSelect");
         const selectedClass = filterSelect ? filterSelect.value : "all";
 
-        const filteredStudents = selectedClass === "all"
-            ? studentsList
-            : studentsList.filter(student => (student.class || student.student_class) === selectedClass);
+        const filterAbsenceSelect = document.getElementById("filterAbsenceSelect");
+        const selectedAbsenceFilter = filterAbsenceSelect ? filterAbsenceSelect.value : "all";
+        
+        const filterMonthSelect = document.getElementById("filterMonthSelect");
+        const selectedMonth = filterMonthSelect ? filterMonthSelect.value : "";
+        
+        // Show/hide month select container based on filter selection
+        const monthFilterContainer = document.getElementById("monthFilterContainer");
+        if (monthFilterContainer) {
+            if (selectedAbsenceFilter === "month5") {
+                monthFilterContainer.style.display = "inline-flex";
+            } else {
+                monthFilterContainer.style.display = "none";
+            }
+        }
+
+        // Apply filters
+        let filteredStudents = studentsList;
+        
+        // Class filter
+        if (selectedClass !== "all") {
+            filteredStudents = filteredStudents.filter(student => (student.class || student.student_class) === selectedClass);
+        }
+        
+        // Absence filter
+        if (selectedAbsenceFilter === "any5") {
+            filteredStudents = filteredStudents.filter(student => {
+                const absences = student.monthly_absences || {};
+                return Object.values(absences).some(count => count >= 5);
+            });
+        } else if (selectedAbsenceFilter === "month5") {
+            filteredStudents = filteredStudents.filter(student => {
+                if (!selectedMonth) return false;
+                const absences = student.monthly_absences || {};
+                return (absences[selectedMonth] || 0) >= 5;
+            });
+        }
 
         if (filteredStudents.length === 0) {
             studentTableBody.innerHTML = `
@@ -224,11 +342,6 @@ document.addEventListener("DOMContentLoaded", () => {
         studentTableBody.innerHTML = "";
         filteredStudents.forEach(student => {
             const tr = document.createElement("tr");
-
-            // Format Chat IDs display (handle nan values)
-            const cleanParent = student.parent_chat_id && String(student.parent_chat_id).toLowerCase() !== "nan" ? student.parent_chat_id : "-";
-            const cleanTeacher = student.teacher_chat_id && String(student.teacher_chat_id).toLowerCase() !== "nan" ? student.teacher_chat_id : "-";
-            const cleanPrincipal = student.principal_chat_id && String(student.principal_chat_id).toLowerCase() !== "nan" ? student.principal_chat_id : "-";
 
             // Absence pill styling (warning if absences >= 5)
             const isHighAbsence = parseInt(student.total_absences) >= 5;
@@ -372,23 +485,79 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // Absences and Month filter listeners
+    const filterAbsenceSelect = document.getElementById("filterAbsenceSelect");
+    if (filterAbsenceSelect) {
+        filterAbsenceSelect.addEventListener("change", () => {
+            renderStudentTable();
+        });
+    }
+
+    const filterMonthSelect = document.getElementById("filterMonthSelect");
+    if (filterMonthSelect) {
+        filterMonthSelect.addEventListener("change", () => {
+            renderStudentTable();
+        });
+    }
+
     // Export Excel Action
     const exportExcelBtn = document.getElementById("exportExcelBtn");
     if (exportExcelBtn) {
         exportExcelBtn.addEventListener("click", () => {
-            if (studentsList.length === 0) {
+            // Apply current filters to data being exported
+            const selectedClass = filterClassSelect ? filterClassSelect.value : "all";
+            const selectedAbsenceFilter = filterAbsenceSelect ? filterAbsenceSelect.value : "all";
+            const selectedMonth = filterMonthSelect ? filterMonthSelect.value : "";
+            
+            let filteredExport = studentsList;
+            if (selectedClass !== "all") {
+                filteredExport = filteredExport.filter(student => (student.class || student.student_class) === selectedClass);
+            }
+            if (selectedAbsenceFilter === "any5") {
+                filteredExport = filteredExport.filter(student => {
+                    const absences = student.monthly_absences || {};
+                    return Object.values(absences).some(count => count >= 5);
+                });
+            } else if (selectedAbsenceFilter === "month5") {
+                filteredExport = filteredExport.filter(student => {
+                    if (!selectedMonth) return false;
+                    const absences = student.monthly_absences || {};
+                    return (absences[selectedMonth] || 0) >= 5;
+                });
+            }
+
+            if (filteredExport.length === 0) {
                 showNotification(currentLang === 'km' ? "គ្មានទិន្នន័យសិស្សសម្រាប់ Export ឡើយ។" : "No student data to export.", false);
                 return;
             }
             
+            // Collect all unique months for columns
+            const monthKeys = [];
+            studentsList.forEach(s => {
+                if (s.monthly_absences) {
+                    Object.keys(s.monthly_absences).forEach(k => {
+                        if (!monthKeys.includes(k)) {
+                            monthKeys.push(k);
+                        }
+                    });
+                }
+            });
+            monthKeys.sort(); // Chronological order
+            
             // Format students data for Excel
-            const dataToExport = studentsList.map(s => {
+            const dataToExport = filteredExport.map(s => {
                 const row = {};
                 if (currentLang === 'km') {
                     row["អត្តលេខ"] = s.student_id;
                     row["គោត្តនាម នាម"] = s.student_name;
                     row["ថ្នាក់"] = s.class || s.student_class || "";
                     row["អវត្តមានសរុប"] = s.total_absences;
+                    
+                    // Add monthly columns
+                    monthKeys.forEach(mKey => {
+                        row[formatMonthKey(mKey, "km")] = s.monthly_absences[mKey] || 0;
+                    });
+                    
                     row["Telegram អាណាព្យាបាល"] = s.parent_chat_id || "";
                     row["Telegram គ្រូ"] = s.teacher_chat_id || "";
                     row["Telegram នាយក"] = s.principal_chat_id || "";
@@ -397,6 +566,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     row["Student Name"] = s.student_name;
                     row["Class"] = s.class || s.student_class || "";
                     row["Total Absences"] = s.total_absences;
+                    
+                    // Add monthly columns
+                    monthKeys.forEach(mKey => {
+                        row[formatMonthKey(mKey, "en")] = s.monthly_absences[mKey] || 0;
+                    });
+                    
                     row["Parent Chat ID"] = s.parent_chat_id || "";
                     row["Teacher Chat ID"] = s.teacher_chat_id || "";
                     row["Principal Chat ID"] = s.principal_chat_id || "";
@@ -422,4 +597,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Initial Fetch
     fetchStudents();
-});
+};
+
+if (document.readyState !== "loading") {
+    initPrincipal();
+} else {
+    document.addEventListener("DOMContentLoaded", initPrincipal);
+}
+

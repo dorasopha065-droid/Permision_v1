@@ -44,3 +44,12 @@ ehthumbs.db
 # Logs
 # ========================
 *.log
+
+.vercel
+.env.production
+.env.development
+.env.local
+console_logs.txt
+step_101_content.txt
+subagent_console_output.txt
+subagent_output.txt

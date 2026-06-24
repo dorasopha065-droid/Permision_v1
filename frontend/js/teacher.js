@@ -1,6 +1,6 @@
 // Client-side controller for teacher_dashboard.html
 
-document.addEventListener("DOMContentLoaded", () => {
+const initTeacher = () => {
     // Session Verification
     const sessionStr = localStorage.getItem("userSession");
     if (!sessionStr) {
@@ -17,6 +17,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // UI Elements
     const usernameLabel = document.getElementById("usernameLabel");
+    if (usernameLabel) {
+        usernameLabel.textContent = user.username;
+    }
     const logoutBtn = document.getElementById("logoutBtn");
     const attendanceDateInput = document.getElementById("attendanceDate");
     const studentTableBody = document.getElementById("studentTableBody");
@@ -48,6 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
             logoutBtn: "Sign Out",
             lblAttendanceDate: "Attendance Date:",
             lblFilterClass: "Filter Class:",
+            lblSubject: "Subject:",
             lblWarningNotice: "* System triggers telegram notifications to parents/principals if a student reaches 5 absences.",
             thStudentInfo: "Student Info",
             thStudentClass: "Class",
@@ -76,6 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
             logoutBtn: "ចាកចេញ",
             lblAttendanceDate: "កាលបរិច្ឆេទវត្តមាន៖",
             lblFilterClass: "ស្វែងរកតាមថ្នាក់៖",
+            lblSubject: "មុខវិជ្ជា៖",
             lblWarningNotice: "* ប្រព័ន្ធនឹងបញ្ជូនសារដំណឹងទៅកាន់តេឡេក្រាមរបស់មាតាបិតា/នាយកសាលា ប្រសិនបើសិស្សអវត្តមានចាប់ពី ៥ ថ្ងៃឡើងទៅ។",
             thStudentInfo: "ព័ត៌មានសិស្ស",
             thStudentClass: "ថ្នាក់",
@@ -140,6 +145,8 @@ document.addEventListener("DOMContentLoaded", () => {
         lblAttendanceDate.textContent = trans.lblAttendanceDate;
         const lblFilterClassEl = document.getElementById("lblFilterClass");
         if (lblFilterClassEl) lblFilterClassEl.textContent = trans.lblFilterClass;
+        const lblSubjectEl = document.getElementById("lblSubject");
+        if (lblSubjectEl) lblSubjectEl.textContent = trans.lblSubject;
         lblWarningNotice.textContent = trans.lblWarningNotice;
         thStudentInfo.textContent = trans.thStudentInfo;
         const thStudentClassEl = document.getElementById("thStudentClass");
@@ -184,7 +191,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await response.json();
 
             if (response.ok && data.status === "success") {
-                currentStudentsList = data.students;
+                if (user.class && user.class.trim() !== "") {
+                    currentStudentsList = data.students.filter(s => (s.class || s.student_class) === user.class);
+                } else {
+                    currentStudentsList = data.students;
+                }
                 populateClassFilter();
                 renderStudents(currentStudentsList);
             } else {
@@ -212,6 +223,17 @@ document.addEventListener("DOMContentLoaded", () => {
     function populateClassFilter() {
         const filterSelect = document.getElementById("filterClassSelect");
         if (!filterSelect) return;
+        
+        if (user.class && user.class.trim() !== "") {
+            filterSelect.innerHTML = `<option value="${user.class}">${user.class}</option>`;
+            filterSelect.value = user.class;
+            filterSelect.disabled = true;
+            const filterContainer = filterSelect.parentElement;
+            if (filterContainer) {
+                filterContainer.style.display = "none";
+            }
+            return;
+        }
         
         const currentSelection = filterSelect.value;
         
@@ -329,7 +351,10 @@ document.addEventListener("DOMContentLoaded", () => {
             showNotification(trans.errFillDate, false);
             return;
         }
-
+        
+        const subjectSelect = document.getElementById("subjectSelect");
+        const subject = subjectSelect ? subjectSelect.value : "";
+ 
         const rows = studentTableBody.querySelectorAll("tr[data-student-id]");
         const records = [];
 
@@ -360,7 +385,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 },
                 body: JSON.stringify({
                     date: date,
-                    records: records
+                    records: records,
+                    subject: subject,
+                    teacher_username: user.username
                 })
             });
 
@@ -410,4 +437,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initial Load & Translation Apply
     applyTranslations(currentLang);
     loadStudents();
-});
+};
+
+if (document.readyState !== "loading") {
+    initTeacher();
+} else {
+    document.addEventListener("DOMContentLoaded", initTeacher);
+}

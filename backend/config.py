@@ -21,4 +21,12 @@ PORT = int(os.getenv("PORT", 8000))
 
 # Simple mock database/credentials flag for development without API keys
 # This allows testing the UI even if the user hasn't configured APIs yet.
-MOCK_MODE = os.getenv("MOCK_MODE", "true").lower() in ("true", "1", "yes")
+# If a Postgres URL is provided, we default MOCK_MODE to False unless explicitly overridden.
+POSTGRES_URL = os.getenv("POSTGRES_URL") or os.getenv("DATABASE_URL")
+
+MOCK_MODE_ENV = os.getenv("MOCK_MODE")
+if MOCK_MODE_ENV is not None:
+    MOCK_MODE = MOCK_MODE_ENV.lower() in ("true", "1", "yes")
+else:
+    MOCK_MODE = not bool(POSTGRES_URL)
+

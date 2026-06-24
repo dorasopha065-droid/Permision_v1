@@ -4,14 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teacher Dashboard - Attendance Portal</title>
+    <!-- Static Stylesheet to prevent Flash of Unstyled Content (FOUC) -->
+    <link rel="stylesheet" href="/css/style.css" id="mainStylesheet">
     <script>
-        (function() {
-            const prefix = window.location.protocol === 'file:' ? '' : '/';
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = prefix + 'css/style.css';
-            document.head.appendChild(link);
-        })();
+        if (window.location.protocol === 'file:') {
+            document.getElementById('mainStylesheet').setAttribute('href', 'css/style.css');
+        }
     </script>
 </head>
 <body>
@@ -64,6 +62,24 @@
                         <option value="all">All Classes</option>
                     </select>
                 </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <label id="lblSubject" for="subjectSelect" style="font-size: 0.9rem; color: var(--text-secondary); font-weight: 500;">Subject:</label>
+                    <select id="subjectSelect" class="lang-select" style="background: rgba(15, 23, 42, 0.8); padding: 0.4rem 0.8rem; border-radius: 8px;">
+                        <option value="សរសេរ">សរសេរ</option>
+                        <option value="តែង">តែង</option>
+                        <option value="គណិត" selected>គណិត</option>
+                        <option value="រូប">រូប</option>
+                        <option value="គីមី">គីមី</option>
+                        <option value="ជីវៈ">ជីវៈ</option>
+                        <option value="ប្រវត្តិ">ប្រវត្តិ</option>
+                        <option value="ICT">ICT</option>
+                        <option value="សីល">សីល</option>
+                        <option value="ផែន">ផែន</option>
+                        <option value="ភូមិ">ភូមិ</option>
+                        <option value="អង់">អង់</option>
+                        <option value="កីឡា">កីឡា</option>
+                    </select>
+                </div>
             </div>
             <div id="lblWarningNotice" style="color: var(--text-secondary); font-size: 0.9rem;">
                 * System triggers telegram notifications to parents/principals if a student reaches 5 absences.
@@ -111,10 +127,12 @@
     <script>
         (function() {
             const prefix = window.location.protocol === 'file:' ? '' : '/';
+            const bust = '?v=' + Date.now();
             function loadScript(src, cb) {
                 const s = document.createElement('script');
-                s.src = src;
+                s.src = src + bust;
                 s.onload = cb;
+                s.onerror = function() { console.error('Failed to load script:', src); };
                 document.body.appendChild(s);
             }
             loadScript(prefix + 'js/config.js', function() {

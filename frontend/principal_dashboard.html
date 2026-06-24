@@ -4,14 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Principal Dashboard - Attendance Portal</title>
+    <!-- Static Stylesheet to prevent Flash of Unstyled Content (FOUC) -->
+    <link rel="stylesheet" href="/css/style.css" id="mainStylesheet">
     <script>
-        (function() {
-            const prefix = window.location.protocol === 'file:' ? '' : '/';
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = prefix + 'css/style.css';
-            document.head.appendChild(link);
-        })();
+        if (window.location.protocol === 'file:') {
+            document.getElementById('mainStylesheet').setAttribute('href', 'css/style.css');
+        }
     </script>
     <!-- SheetJS for client-side Excel/CSV generation -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -69,6 +67,21 @@
                                 <option value="all">All Classes</option>
                             </select>
                         </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-right: 0.5rem;">
+                            <label id="lblFilterAbsence" for="filterAbsenceSelect" style="font-size: 0.9rem; color: var(--text-secondary); font-weight: 500;">Absences Filter:</label>
+                            <select id="filterAbsenceSelect" class="lang-select" style="background: rgba(15, 23, 42, 0.8); padding: 0.4rem 0.8rem; border-radius: 8px;">
+                                <option id="optAllAbsences" value="all">All Students</option>
+                                <option id="optAny5" value="any5">Absences >= 5 in Any Month</option>
+                                <option id="optMonth5" value="month5">Absences >= 5 in Specific Month</option>
+                            </select>
+                        </div>
+                        <div id="monthFilterContainer" style="display: none; align-items: center; gap: 0.5rem; margin-right: 0.5rem;">
+                            <label id="lblFilterMonth" for="filterMonthSelect" style="font-size: 0.9rem; color: var(--text-secondary); font-weight: 500;">Month:</label>
+                            <select id="filterMonthSelect" class="lang-select" style="background: rgba(15, 23, 42, 0.8); padding: 0.4rem 0.8rem; border-radius: 8px;">
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+
                         <button id="exportExcelBtn" class="btn btn-secondary" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.25rem;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                             <span id="btnExportExcelText">Export Excel</span>
@@ -123,10 +136,12 @@
     <script>
         (function() {
             const prefix = window.location.protocol === 'file:' ? '' : '/';
+            const bust = '?v=' + Date.now();
             function loadScript(src, cb) {
                 const s = document.createElement('script');
-                s.src = src;
+                s.src = src + bust;
                 s.onload = cb;
+                s.onerror = function() { console.error('Failed to load script:', src); };
                 document.body.appendChild(s);
             }
             loadScript(prefix + 'js/config.js', function() {

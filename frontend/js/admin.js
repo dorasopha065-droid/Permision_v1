@@ -1,6 +1,6 @@
 // Client-side controller for admin_dashboard.html
 
-document.addEventListener("DOMContentLoaded", () => {
+const initAdmin = () => {
     // Session Verification
     const sessionStr = localStorage.getItem("userSession");
     if (!sessionStr) {
@@ -32,6 +32,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const regRole = document.getElementById("regRole");
     const regLinkedId = document.getElementById("regLinkedId");
     const regChatId = document.getElementById("regChatId");
+    const regClass = document.getElementById("regClass");
+    const classGroup = document.getElementById("classGroup");
     const createBtn = document.getElementById("createBtn");
     const btnSpinner = document.getElementById("btnSpinner");
     const btnText = document.getElementById("btnText");
@@ -43,11 +45,41 @@ document.addEventListener("DOMContentLoaded", () => {
     const lblLinkedId = document.getElementById("lblLinkedId");
     const lblChatId = document.getElementById("lblChatId");
 
+    // UI Elements - Users Directory
+    const userTableBody = document.getElementById("userTableBody");
+    
+    // UI Elements - User Modal
+    const userModal = document.getElementById("userModal");
+    const userForm = document.getElementById("userForm");
+    const editUsernameInput = document.getElementById("editUsername");
+    const userModalUsername = document.getElementById("userModalUsername");
+    const userModalPassword = document.getElementById("userModalPassword");
+    const userModalRole = document.getElementById("userModalRole");
+    const userModalLinkedId = document.getElementById("userModalLinkedId");
+    const userModalChatId = document.getElementById("userModalChatId");
+    const userModalClass = document.getElementById("userModalClass");
+    const userModalClassGroup = document.getElementById("userModalClassGroup");
+    const closeUserModalBtn = document.getElementById("closeUserModalBtn");
+    const cancelUserModalBtn = document.getElementById("cancelUserModalBtn");
+    const saveUserBtn = document.getElementById("saveUserBtn");
+    const userModalSpinner = document.getElementById("userModalSpinner");
+    const btnUserModalSaveText = document.getElementById("btnUserModalSaveText");
+
     // UI Elements - Tabs Control
     const tabUsers = document.getElementById("tabUsers");
     const tabStudents = document.getElementById("tabStudents");
+    const tabSettings = document.getElementById("tabSettings");
     const usersTabContent = document.getElementById("usersTabContent");
     const studentsTabContent = document.getElementById("studentsTabContent");
+    const settingsTabContent = document.getElementById("settingsTabContent");
+
+    // UI Elements - System Settings Tab
+    const telegramSettingsForm = document.getElementById("telegramSettingsForm");
+    const currentBotTokenDisplay = document.getElementById("currentBotTokenDisplay");
+    const newBotTokenInput = document.getElementById("newBotTokenInput");
+    const saveTelegramBtn = document.getElementById("saveTelegramBtn");
+    const saveTelegramSpinner = document.getElementById("saveTelegramSpinner");
+    const btnSaveTelegramText = document.getElementById("btnSaveTelegramText");
 
     // UI Elements - Students Tab Directory
     const studentTableBody = document.getElementById("studentTableBody");
@@ -76,6 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Local Student Storage
     let studentsList = [];
+    let usersList = [];
     let hasTrashActive = false;
 
     // Translation Dictionary
@@ -90,6 +123,7 @@ document.addEventListener("DOMContentLoaded", () => {
             lblRole: "Role",
             lblLinkedId: "Linked ID",
             lblChatId: "Telegram Chat ID",
+            lblUserClass: "Class (Teacher only)",
             placeholderUsername: "Enter username",
             placeholderLinkedId: "e.g. T001, STU001",
             placeholderChatId: "e.g. 123456789",
@@ -145,7 +179,37 @@ document.addEventListener("DOMContentLoaded", () => {
             confirmDeletePermanently: "⚠️ WARNING: Are you sure you want to PERMANENTLY delete all students from trash? This action is irreversible!",
             studentSuccessDeletePermanently: "All student records permanently cleared!",
             studentSuccessRestoreAll: "All student records restored successfully!",
-            promptDeletePhrase: "Please type 'loveyou' to delete all students:"
+            promptDeletePhrase: "Please type 'loveyou' to delete all students:",
+            tabSettings: "System Settings",
+            settingsCardTitle: "Telegram Integration",
+            settingsCardSubtitle: "Configure the active Telegram Bot Token",
+            lblCurrentBotToken: "Current Active Token",
+            lblNewBotToken: "New Telegram Bot Token",
+            placeholderNewBotToken: "Enter new Telegram Bot Token",
+            btnSaveTelegram: "Update Token",
+            btnSavingTelegram: "Updating...",
+            successUpdateTelegram: "Telegram Bot Token updated successfully!",
+             errTokenEmpty: "Token cannot be empty.",
+            usersListTitle: "Users Directory",
+            thUsername: "Username",
+            thPassword: "Password",
+            thRole: "Role",
+            thLinkedId: "Linked ID",
+            thUserChat: "Telegram Chat ID",
+            thClass: "Class",
+            thUserActions: "Actions",
+            lblModalUsername: "Username",
+            lblModalPassword: "Password",
+            lblModalRole: "Role",
+            lblModalLinkedId: "Linked ID",
+            lblModalChatId: "Telegram Chat ID",
+            lblModalUserClass: "Class (Teacher only)",
+            userModalTitle: "Edit User Account",
+            btnUserModalSave: "Save Changes",
+            btnUserModalSaving: "Saving...",
+            successUpdateUser: "User account updated successfully!",
+            successDeleteUser: "User account deleted successfully!",
+            confirmDeleteUser: "Are you sure you want to delete this user account?"
         },
         km: {
             adminTitle: "ផ្ទាំងគ្រប់គ្រង Admin",
@@ -157,6 +221,7 @@ document.addEventListener("DOMContentLoaded", () => {
             lblRole: "តួនាទី (Role)",
             lblLinkedId: "អត្តសញ្ញាណភ្ជាប់ (Linked ID)",
             lblChatId: "Telegram Chat ID",
+            lblUserClass: "ថ្នាក់ (សម្រាប់តែគ្រូ)",
             placeholderUsername: "បញ្ចូលឈ្មោះគណនី",
             placeholderLinkedId: "ឧ. T001, STU001",
             placeholderChatId: "ឧ. 123456789",
@@ -212,7 +277,37 @@ document.addEventListener("DOMContentLoaded", () => {
             confirmDeletePermanently: "⚠️ ព្រមាន៖ តើអ្នកប្រាកដជាចង់លុបទិន្នន័យសិស្សទាំងអស់ពីធុងសំរាមជាអចិន្ត្រៃយ៍មែនទេ? សកម្មភាពនេះមិនអាចសង្គ្រោះវិញបានទេ!",
             studentSuccessDeletePermanently: "បានលុបទិន្នន័យសិស្សទាំងអស់ជាអចិន្ត្រៃយ៍ដោយជោគជ័យ!",
             studentSuccessRestoreAll: "បានស្តារទិន្នន័យសិស្សទាំងអស់ឡើងវិញដោយជោគជ័យ!",
-            promptDeletePhrase: "សូមវាយបញ្ចូលពាក្យ 'loveyou' ដើម្បីលុបសិស្សទាំងអស់៖"
+            promptDeletePhrase: "សូមវាយបញ្ចូលពាក្យ 'loveyou' ដើម្បីលុបសិស្សទាំងអស់៖",
+            tabSettings: "ការកំណត់ប្រព័ន្ធ",
+            settingsCardTitle: "ការភ្ជាប់ Telegram Bot",
+            settingsCardSubtitle: "កំណត់តម្លៃលេខកូដ Telegram Bot Token ដែលកំពុងដំណើរការ",
+            lblCurrentBotToken: "លេខកូដ Token បច្ចុប្បន្ន",
+            lblNewBotToken: "លេខកូដ Telegram Bot Token ថ្មី",
+            placeholderNewBotToken: "បញ្ចូលលេខកូដ Telegram Bot Token ថ្មី",
+            btnSaveTelegram: "ធ្វើបច្ចុប្បន្នភាព Token",
+            btnSavingTelegram: "កំពុងធ្វើបច្ចុប្បន្នភាព...",
+            successUpdateTelegram: "បានធ្វើបច្ចុប្បន្នភាព Telegram Bot Token ដោយជោគជ័យ!",
+            errTokenEmpty: "Token មិនអាចទទេបានឡើយ។",
+            usersListTitle: "បញ្ជីឈ្មោះគណនីអ្នកប្រើប្រាស់",
+            thUsername: "ឈ្មោះគណនី (Username)",
+            thPassword: "លេខសម្ងាត់ (Password)",
+            thRole: "តួនាទី (Role)",
+            thLinkedId: "អត្តសញ្ញាណភ្ជាប់ (Linked ID)",
+            thUserChat: "Telegram Chat ID",
+            thClass: "ថ្នាក់ (Class)",
+            thUserActions: "សកម្មភាព (Actions)",
+            lblModalUsername: "ឈ្មោះគណនី",
+            lblModalPassword: "លេខសម្ងាត់",
+            lblModalRole: "តួនាទី",
+            lblModalLinkedId: "អត្តសញ្ញាណភ្ជាប់",
+            lblModalChatId: "Telegram Chat ID",
+            lblModalUserClass: "ថ្នាក់ (សម្រាប់តែគ្រូ)",
+            userModalTitle: "កែសម្រួលគណនីអ្នកប្រើប្រាស់",
+            btnUserModalSave: "រក្សាទុកការផ្លាស់ប្តូរ",
+            btnUserModalSaving: "កំពុងរក្សាទុក...",
+            successUpdateUser: "បានធ្វើបច្ចុប្បន្នភាពគណនីអ្នកប្រើប្រាស់ដោយជោគជ័យ!",
+            successDeleteUser: "បានលុបគណនីអ្នកប្រើប្រាស់ដោយជោគជ័យ!",
+            confirmDeleteUser: "តើអ្នកពិតជាចង់លុបគណនីអ្នកប្រើប្រាស់នេះមែនទេ?"
         }
     };
 
@@ -235,6 +330,8 @@ document.addEventListener("DOMContentLoaded", () => {
         lblRole.textContent = trans.lblRole;
         lblLinkedId.textContent = trans.lblLinkedId;
         lblChatId.textContent = trans.lblChatId;
+        const lblUserClassEl = document.getElementById("lblUserClass");
+        if (lblUserClassEl) lblUserClassEl.textContent = trans.lblUserClass;
         
         regUsername.placeholder = trans.placeholderUsername;
         regLinkedId.placeholder = trans.placeholderLinkedId;
@@ -249,6 +346,67 @@ document.addEventListener("DOMContentLoaded", () => {
         // Tab switcher text
         tabUsers.textContent = trans.tabUsers;
         tabStudents.textContent = trans.tabStudents;
+        if (tabSettings) tabSettings.textContent = trans.tabSettings;
+
+        // Settings Tab Translation
+        const settingsCardTitle = document.getElementById("settingsCardTitle");
+        if (settingsCardTitle) settingsCardTitle.textContent = trans.settingsCardTitle;
+        const settingsCardSubtitle = document.getElementById("settingsCardSubtitle");
+        if (settingsCardSubtitle) settingsCardSubtitle.textContent = trans.settingsCardSubtitle;
+        const lblCurrentBotToken = document.getElementById("lblCurrentBotToken");
+        if (lblCurrentBotToken) lblCurrentBotToken.textContent = trans.lblCurrentBotToken;
+        const lblNewBotToken = document.getElementById("lblNewBotToken");
+        if (lblNewBotToken) lblNewBotToken.textContent = trans.lblNewBotToken;
+        if (newBotTokenInput) newBotTokenInput.placeholder = trans.placeholderNewBotToken;
+        if (btnSaveTelegramText) {
+            if (saveTelegramBtn.disabled) {
+                btnSaveTelegramText.textContent = trans.btnSavingTelegram;
+            } else {
+                btnSaveTelegramText.textContent = trans.btnSaveTelegram;
+            }
+        }
+
+        // Users Table & Directory Translations
+        const usersListTitleEl = document.getElementById("usersListTitle");
+        if (usersListTitleEl) usersListTitleEl.textContent = trans.usersListTitle;
+        const thUsernameEl = document.getElementById("thUsername");
+        if (thUsernameEl) thUsernameEl.textContent = trans.thUsername;
+        const thPasswordEl = document.getElementById("thPassword");
+        if (thPasswordEl) thPasswordEl.textContent = trans.thPassword;
+        const thRoleEl = document.getElementById("thRole");
+        if (thRoleEl) thRoleEl.textContent = trans.thRole;
+        const thLinkedIdEl = document.getElementById("thLinkedId");
+        if (thLinkedIdEl) thLinkedIdEl.textContent = trans.thLinkedId;
+        const thUserChatEl = document.getElementById("thUserChat");
+        if (thUserChatEl) thUserChatEl.textContent = trans.thUserChat;
+        const thClassEl = document.getElementById("thClass");
+        if (thClassEl) thClassEl.textContent = trans.thClass;
+        const thUserActionsEl = document.getElementById("thUserActions");
+        if (thUserActionsEl) thUserActionsEl.textContent = trans.thUserActions;
+
+        // User Edit Modal Translations
+        const userModalTitleEl = document.getElementById("userModalTitle");
+        if (userModalTitleEl) userModalTitleEl.textContent = trans.userModalTitle;
+        const lblModalUsernameEl = document.getElementById("lblModalUsername");
+        if (lblModalUsernameEl) lblModalUsernameEl.textContent = trans.lblModalUsername;
+        const lblModalPasswordEl = document.getElementById("lblModalPassword");
+        if (lblModalPasswordEl) lblModalPasswordEl.textContent = trans.lblModalPassword;
+        const lblModalRoleEl = document.getElementById("lblModalRole");
+        if (lblModalRoleEl) lblModalRoleEl.textContent = trans.lblModalRole;
+        const lblModalLinkedIdEl = document.getElementById("lblModalLinkedId");
+        if (lblModalLinkedIdEl) lblModalLinkedIdEl.textContent = trans.lblModalLinkedId;
+        const lblModalChatIdEl = document.getElementById("lblModalChatId");
+        if (lblModalChatIdEl) lblModalChatIdEl.textContent = trans.lblModalChatId;
+        const lblModalUserClassEl = document.getElementById("lblModalUserClass");
+        if (lblModalUserClassEl) lblModalUserClassEl.textContent = trans.lblModalUserClass;
+        
+        if (btnUserModalSaveText) {
+            if (saveUserBtn.disabled) {
+                btnUserModalSaveText.textContent = trans.btnUserModalSaving;
+            } else {
+                btnUserModalSaveText.textContent = trans.btnUserModalSave;
+            }
+        }
 
         // Students directory elements
         document.getElementById("studentListTitle").textContent = trans.studentListTitle;
@@ -310,6 +468,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         renderStudentTable();
+        renderUserTable();
     }
 
     // Toggle Language Selection
@@ -318,6 +477,20 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem("lang", currentLang);
         applyTranslations(currentLang);
     });
+
+    // Toggle Class input visibility based on role selection
+    const updateClassGroupVisibility = () => {
+        if (regRole.value === "Teacher") {
+            classGroup.style.display = "block";
+            regClass.required = true;
+        } else {
+            classGroup.style.display = "none";
+            regClass.required = false;
+            regClass.value = "";
+        }
+    };
+    regRole.addEventListener("change", updateClassGroupVisibility);
+    updateClassGroupVisibility();
 
     // Alert toast helper
     function showNotification(message, isSuccess = true) {
@@ -334,21 +507,176 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 4000);
     }
 
+    // Custom Confirmation Modal Helper (bypasses browser sandboxing/blocking issues)
+    function showCustomConfirm(options) {
+        return new Promise((resolve) => {
+            const modal = document.getElementById("confirmModal");
+            const titleEl = document.getElementById("confirmTitle");
+            const msgEl = document.getElementById("confirmMessage");
+            const cancelBtn = document.getElementById("confirmCancelBtn");
+            const okBtn = document.getElementById("confirmOkBtn");
+            
+            const promptGroup = document.getElementById("confirmPromptGroup");
+            const promptInput = document.getElementById("confirmPromptInput");
+            const promptLabel = document.getElementById("lblConfirmPrompt");
+            
+            titleEl.textContent = options.title || (currentLang === 'km' ? "បញ្ជាក់សកម្មភាព" : "Confirm Action");
+            msgEl.textContent = options.message || "";
+            
+            // Set button text
+            cancelBtn.textContent = options.cancelText || (currentLang === 'km' ? "បោះបង់" : "Cancel");
+            okBtn.textContent = options.okText || (currentLang === 'km' ? "យល់ព្រម" : "Confirm");
+            
+            if (options.isPrompt) {
+                promptGroup.classList.remove("hidden");
+                promptLabel.textContent = options.promptLabel || "";
+                promptInput.value = options.defaultValue || "";
+                setTimeout(() => {
+                    promptInput.focus();
+                    if (options.defaultValue) {
+                        promptInput.select();
+                    }
+                }, 100);
+            } else {
+                promptGroup.classList.add("hidden");
+            }
+            
+            const cleanup = () => {
+                modal.classList.remove("show");
+                cancelBtn.removeEventListener("click", onCancel);
+                okBtn.removeEventListener("click", onOk);
+                modal.removeEventListener("click", onOutsideClick);
+            };
+            
+            const onCancel = () => {
+                cleanup();
+                resolve(null);
+            };
+            
+            const onOk = () => {
+                if (options.isPrompt) {
+                    const val = promptInput.value.trim();
+                    cleanup();
+                    resolve(val);
+                } else {
+                    cleanup();
+                    resolve(true);
+                }
+            };
+            
+            const onOutsideClick = (e) => {
+                if (e.target === modal) {
+                    onCancel();
+                }
+            };
+            
+            cancelBtn.addEventListener("click", onCancel);
+            okBtn.addEventListener("click", onOk);
+            modal.addEventListener("click", onOutsideClick);
+            
+            modal.classList.add("show");
+        });
+    }
+
     // Tab Navigation Logic
     tabUsers.addEventListener("click", () => {
         tabUsers.classList.add("active");
         tabStudents.classList.remove("active");
+        if (tabSettings) tabSettings.classList.remove("active");
         usersTabContent.classList.add("active");
         studentsTabContent.classList.remove("active");
+        if (settingsTabContent) settingsTabContent.classList.remove("active");
+        fetchUsers();
     });
 
     tabStudents.addEventListener("click", () => {
         tabStudents.classList.add("active");
         tabUsers.classList.remove("active");
+        if (tabSettings) tabSettings.classList.remove("active");
         studentsTabContent.classList.add("active");
         usersTabContent.classList.remove("active");
+        if (settingsTabContent) settingsTabContent.classList.remove("active");
         fetchStudents();
     });
+
+    if (tabSettings) {
+        tabSettings.addEventListener("click", () => {
+            tabSettings.classList.add("active");
+            tabUsers.classList.remove("active");
+            tabStudents.classList.remove("active");
+            if (settingsTabContent) settingsTabContent.classList.add("active");
+            usersTabContent.classList.remove("active");
+            studentsTabContent.classList.remove("active");
+            fetchTelegramSettings();
+        });
+    }
+
+    // Fetch current active Telegram Bot Token setting
+    async function fetchTelegramSettings() {
+        if (!currentBotTokenDisplay) return;
+        currentBotTokenDisplay.value = currentLang === 'km' ? "កំពុងទាញយក..." : "Loading...";
+        
+        try {
+            const response = await fetch(CONFIG.getApiUrl(`/api/settings/telegram?username=${user.username}`));
+            const data = await response.json();
+            
+            if (response.ok && data.status === "success") {
+                currentBotTokenDisplay.value = data.masked_token;
+            } else {
+                currentBotTokenDisplay.value = currentLang === 'km' ? "មិនទាន់កំណត់" : "Not Configured";
+            }
+        } catch (error) {
+            console.error("Failed to fetch telegram settings:", error);
+            currentBotTokenDisplay.value = currentLang === 'km' ? "កំហុសបណ្តាញ" : "Network Error";
+        }
+    }
+
+    // Submit new Telegram Bot Token
+    if (telegramSettingsForm) {
+        telegramSettingsForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const token = newBotTokenInput.value.trim();
+            const trans = translations[currentLang];
+            
+            if (!token) {
+                showNotification(trans.errTokenEmpty, false);
+                return;
+            }
+            
+            saveTelegramBtn.disabled = true;
+            if (saveTelegramSpinner) saveTelegramSpinner.classList.remove("hidden");
+            if (btnSaveTelegramText) btnSaveTelegramText.textContent = trans.btnSavingTelegram;
+            
+            try {
+                const response = await fetch(CONFIG.getApiUrl("/api/settings/telegram"), {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        username: user.username,
+                        telegram_bot_token: token
+                    })
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showNotification(trans.successUpdateTelegram, true);
+                    newBotTokenInput.value = "";
+                    fetchTelegramSettings();
+                } else {
+                    showNotification(data.detail || "Error updating settings", false);
+                }
+            } catch (error) {
+                console.error("Failed to update telegram token:", error);
+                showNotification(trans.errorConnect, false);
+            } finally {
+                saveTelegramBtn.disabled = false;
+                if (saveTelegramSpinner) saveTelegramSpinner.classList.add("hidden");
+                if (btnSaveTelegramText) btnSaveTelegramText.textContent = trans.btnSaveTelegram;
+            }
+        });
+    }
 
     // Fetch student list from backend
     async function fetchStudents() {
@@ -631,7 +959,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // Delete Student Action
     async function deleteStudent(studentId) {
         const trans = translations[currentLang];
-        if (!confirm(trans.confirmDelete)) {
+        const confirmed = await showCustomConfirm({
+            title: currentLang === 'km' ? "លុបសិស្ស" : "Delete Student",
+            message: trans.confirmDelete,
+            okText: currentLang === 'km' ? "លុប" : "Delete"
+        });
+
+        if (!confirmed) {
             return;
         }
 
@@ -662,6 +996,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const role = regRole.value;
         const linkedId = regLinkedId.value.trim();
         const chatId = regChatId.value.trim();
+        const userClass = regClass ? regClass.value.trim() : "";
 
         const trans = translations[currentLang];
 
@@ -680,7 +1015,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     password: password,
                     role: role,
                     linked_id: linkedId,
-                    telegram_chat_id: chatId
+                    telegram_chat_id: chatId,
+                    class: userClass
                 })
             });
 
@@ -689,6 +1025,8 @@ document.addEventListener("DOMContentLoaded", () => {
             if (response.ok) {
                 showNotification(trans.successMsg, true);
                 registerForm.reset();
+                updateClassGroupVisibility();
+                fetchUsers();
             } else {
                 if (data.detail && data.detail.includes("exists")) {
                     showNotification(trans.errorExists, false);
@@ -831,7 +1169,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 : "Please enter the Google Sheets link (must be Shared as Public/Anyone with link):";
             const defaultUrl = "https://docs.google.com/spreadsheets/d/1OdMK-ii-IWEEj2gw0rusArzXPlwgNcRPOXHkTlTAnUg/edit?gid=0#gid=0";
             
-            const url = prompt(promptMsg, defaultUrl);
+            const url = await showCustomConfirm({
+                title: currentLang === 'km' ? "នាំចូលសិស្សពី Link" : "Import from Google Sheets Link",
+                message: "",
+                isPrompt: true,
+                promptLabel: promptMsg,
+                defaultValue: defaultUrl,
+                okText: currentLang === 'km' ? "នាំចូល" : "Import"
+            });
             if (!url) return;
             
             importLinkBtn.disabled = true;
@@ -971,7 +1316,13 @@ document.addEventListener("DOMContentLoaded", () => {
             const trans = translations[currentLang];
             
             if (hasTrashActive && studentsList.length === 0) {
-                if (!confirm(trans.confirmDeletePermanently)) {
+                const confirmed = await showCustomConfirm({
+                    title: currentLang === 'km' ? "លុបសិស្សជាអចិន្ត្រៃយ៍" : "Delete Permanently",
+                    message: trans.confirmDeletePermanently,
+                    okText: currentLang === 'km' ? "លុបជាអចិន្ត្រៃយ៍" : "Delete Permanently"
+                });
+                
+                if (!confirmed) {
                     return;
                 }
                 
@@ -995,7 +1346,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     deleteAllStudentsBtn.disabled = false;
                 }
             } else {
-                const phrase = prompt(trans.promptDeletePhrase);
+                const phrase = await showCustomConfirm({
+                    title: currentLang === 'km' ? "លុបសិស្សទាំងអស់" : "Delete All Students",
+                    message: trans.confirmDeleteAll,
+                    isPrompt: true,
+                    promptLabel: trans.promptDeletePhrase,
+                    okText: currentLang === 'km' ? "លុបទាំងអស់" : "Delete All"
+                });
+                
                 if (phrase !== "loveyou") {
                     if (phrase !== null) {
                         showNotification(currentLang === 'km' ? "ពាក្យបញ្ជាក់មិនត្រឹមត្រូវឡើយ។" : "Incorrect confirmation phrase.", false);
@@ -1095,9 +1453,269 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // Local User Storage
+
+    // Fetch user list from backend
+    async function fetchUsers() {
+        if (!userTableBody) return;
+        userTableBody.innerHTML = `
+            <tr>
+                <td colspan="7" style="text-align: center; color: var(--text-secondary); padding: 3rem;">
+                    <div class="spinner" style="margin-bottom: 1rem;"></div>
+                    <p>${currentLang === 'km' ? 'កំពុងទាញយកបញ្ជីឈ្មោះអ្នកប្រើប្រាស់...' : 'Loading users directory...'}</p>
+                </td>
+            </tr>
+        `;
+
+        try {
+            const response = await fetch(CONFIG.getApiUrl(`/api/users?admin_username=${encodeURIComponent(user.username)}`));
+            const data = await response.json();
+
+            if (response.ok && data.users) {
+                usersList = data.users;
+                renderUserTable();
+            } else {
+                showNotification(data.detail || "Failed to load users", false);
+            }
+        } catch (error) {
+            console.error("Failed to load users:", error);
+            showNotification(translations[currentLang].errorConnect, false);
+        }
+    }
+
+    // Render User Directory inside Tab Table
+    function renderUserTable() {
+        const trans = translations[currentLang];
+        if (!userTableBody) return;
+
+        if (usersList.length === 0) {
+            userTableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                        ${currentLang === 'km' ? 'គ្មានគណនីអ្នកប្រើប្រាស់ឡើយ។' : 'No user accounts found.'}
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        userTableBody.innerHTML = "";
+        usersList.forEach(u => {
+            const tr = document.createElement("tr");
+
+            const cleanClass = u.class || "-";
+            const cleanChat = u.telegram_chat_id || "-";
+            
+            // Password display with toggle eye button
+            tr.innerHTML = `
+                <td><strong>${u.username}</strong></td>
+                <td>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span class="pwd-display" data-visible="false" data-pwd="${u.password}">••••••••</span>
+                        <button class="action-btn pwd-toggle-btn" style="padding: 0.25rem; margin: 0; display: inline-flex; align-items: center; color: var(--text-secondary);" title="Toggle Password">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                </td>
+                <td><span class="user-role-badge" style="background: ${u.role === 'Admin' ? 'rgba(244, 63, 94, 0.15)' : 'rgba(99, 102, 241, 0.15)'}; border-color: ${u.role === 'Admin' ? 'rgba(244, 63, 94, 0.4)' : 'rgba(99, 102, 241, 0.4)'}; color: ${u.role === 'Admin' ? '#fecdd3' : '#c7d2fe'}">${u.role}</span></td>
+                <td><code style="font-size:0.85rem; color:var(--text-secondary);">${u.linked_id || "-"}</code></td>
+                <td><code style="font-size:0.85rem; color:var(--text-secondary);">${cleanChat}</code></td>
+                <td>${cleanClass}</td>
+                <td style="text-align: center;">
+                    <button class="action-btn edit-user-btn" data-username="${u.username}" title="Edit User">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    </button>
+                    <button class="action-btn delete-user-btn" data-username="${u.username}" title="Delete User">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                    </button>
+                </td>
+            `;
+
+            // Bind Password Toggle Event
+            const pwdDisplay = tr.querySelector(".pwd-display");
+            const toggleBtn = tr.querySelector(".pwd-toggle-btn");
+            toggleBtn.addEventListener("click", () => {
+                const isVisible = pwdDisplay.getAttribute("data-visible") === "true";
+                if (isVisible) {
+                    pwdDisplay.textContent = "••••••••";
+                    pwdDisplay.setAttribute("data-visible", "false");
+                    toggleBtn.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    `;
+                } else {
+                    pwdDisplay.textContent = pwdDisplay.getAttribute("data-pwd");
+                    pwdDisplay.setAttribute("data-visible", "true");
+                    toggleBtn.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                            <line x1="1" y1="1" x2="23" y2="23"></line>
+                        </svg>
+                    `;
+                }
+            });
+
+            // Bind Edit Event
+            tr.querySelector(".edit-user-btn").addEventListener("click", () => {
+                openUserModal(u);
+            });
+
+            // Bind Delete Event
+            tr.querySelector(".delete-user-btn").addEventListener("click", () => {
+                deleteUser(u.username);
+            });
+
+            userTableBody.appendChild(tr);
+        });
+    }
+
+    // Modal Control: Open User Modal
+    function openUserModal(u) {
+        editUsernameInput.value = u.username;
+        userModalUsername.value = u.username;
+        userModalPassword.value = u.password;
+        userModalRole.value = u.role;
+        userModalLinkedId.value = u.linked_id || "";
+        userModalChatId.value = u.telegram_chat_id || "";
+        userModalClass.value = u.class || "";
+
+        // Update Class field visibility in modal
+        const updateModalClassVisibility = () => {
+            if (userModalRole.value === "Teacher") {
+                userModalClassGroup.style.display = "block";
+                userModalClass.required = true;
+            } else {
+                userModalClassGroup.style.display = "none";
+                userModalClass.required = false;
+                userModalClass.value = "";
+            }
+        };
+        userModalRole.onchange = updateModalClassVisibility;
+        updateModalClassVisibility();
+
+        userModal.classList.add("show");
+    }
+
+    // Modal Control: Close User Modal
+    function closeUserModal() {
+        userModal.classList.remove("show");
+    }
+
+    // User Edit Form submission
+    userForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        
+        const targetUsername = editUsernameInput.value;
+        const password = userModalPassword.value.trim();
+        const role = userModalRole.value;
+        const linkedId = userModalLinkedId.value.trim();
+        const chatId = userModalChatId.value.trim();
+        const userClass = userModalClass.value.trim();
+        const trans = translations[currentLang];
+
+        saveUserBtn.disabled = true;
+        if (userModalSpinner) userModalSpinner.classList.remove("hidden");
+        if (btnUserModalSaveText) btnUserModalSaveText.textContent = trans.btnUserModalSaving;
+
+        try {
+            const response = await fetch(CONFIG.getApiUrl(`/api/users/${encodeURIComponent(targetUsername)}?admin_username=${encodeURIComponent(user.username)}`), {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    password: password,
+                    role: role,
+                    linked_id: linkedId,
+                    telegram_chat_id: chatId,
+                    class: userClass
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                showNotification(trans.successUpdateUser, true);
+                closeUserModal();
+                fetchUsers();
+            } else {
+                showNotification(data.detail || "Error updating user account", false);
+            }
+        } catch (error) {
+            console.error("User edit failed:", error);
+            showNotification(trans.errorConnect, false);
+        } finally {
+            saveUserBtn.disabled = false;
+            if (userModalSpinner) userModalSpinner.classList.add("hidden");
+            if (btnUserModalSaveText) btnUserModalSaveText.textContent = trans.btnUserModalSave;
+        }
+    });
+
+    // Close user modal listeners
+    if (closeUserModalBtn) closeUserModalBtn.addEventListener("click", closeUserModal);
+    if (cancelUserModalBtn) cancelUserModalBtn.addEventListener("click", closeUserModal);
+    userModal.addEventListener("click", (e) => {
+        if (e.target === userModal) {
+            closeUserModal();
+        }
+    });
+
+    // User Deletion Action
+    async function deleteUser(targetUsername) {
+        const trans = translations[currentLang];
+        if (targetUsername.toLowerCase() === user.username.toLowerCase()) {
+            const selfDeleteWarning = currentLang === 'km'
+                ? "កំហុស៖ អ្នកមិនអាចលុបគណនីអ្នកគ្រប់គ្រង (Admin) ផ្ទាល់ខ្លួនរបស់អ្នកបានទេ។"
+                : "Permission denied: You cannot delete your own administrator account.";
+            showNotification(selfDeleteWarning, false);
+            return;
+        }
+
+        const confirmed = await showCustomConfirm({
+            title: currentLang === 'km' ? "លុបគណនីអ្នកប្រើប្រាស់" : "Delete User Account",
+            message: trans.confirmDeleteUser,
+            okText: currentLang === 'km' ? "លុប" : "Delete"
+        });
+
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            const response = await fetch(CONFIG.getApiUrl(`/api/users/${encodeURIComponent(targetUsername)}?admin_username=${encodeURIComponent(user.username)}`), {
+                method: "DELETE"
+            });
+            const data = await response.json();
+
+            if (response.ok) {
+                showNotification(trans.successDeleteUser, true);
+                fetchUsers();
+            } else {
+                showNotification(data.detail || "Failed to delete user", false);
+            }
+        } catch (error) {
+            console.error("Deletion failed:", error);
+            showNotification(trans.errorConnect, false);
+        }
+    }
+
+    // Initial load call for users list
+    fetchUsers();
+
     // Handle Logout
     logoutBtn.addEventListener("click", () => {
         localStorage.removeItem("userSession");
         CONFIG.redirect("/login");
     });
-});
+};
+
+if (document.readyState !== "loading") {
+    initAdmin();
+} else {
+    document.addEventListener("DOMContentLoaded", initAdmin);
+}

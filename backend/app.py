@@ -20,7 +20,7 @@ app = FastAPI(title="School Attendance Management System")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -33,6 +33,7 @@ sheets_service = SheetsService()
 class LoginRequest(BaseModel):
     username: str
     password: str
+    telegram_bot_token: Optional[str] = None
 
 class AttendanceRecord(BaseModel):
     student_id: str
@@ -42,6 +43,8 @@ class AttendanceRecord(BaseModel):
 class AttendanceSubmitRequest(BaseModel):
     date: str
     records: List[AttendanceRecord]
+    subject: str
+    teacher_username: Optional[str] = None
 
 class RegisterUserRequest(BaseModel):
     username: str
@@ -49,6 +52,20 @@ class RegisterUserRequest(BaseModel):
     role: str  # e.g., 'Teacher', 'Principal', 'Parent', 'Student', 'Admin'
     linked_id: str
     telegram_chat_id: str
+    user_class: Optional[str] = Field(default="", alias="class")
+
+    class Config:
+        populate_by_name = True
+
+class UpdateUserRequest(BaseModel):
+    password: str
+    role: str
+    linked_id: str
+    telegram_chat_id: str
+    user_class: Optional[str] = Field(default="", alias="class")
+
+    class Config:
+        populate_by_name = True
 
 class RegisterStudentRequest(BaseModel):
     student_id: str
@@ -84,12 +101,22 @@ class ImportUrlRequest(BaseModel):
 async def login(credentials: LoginRequest):
     """Authenticate user and return role/session information."""
     try:
+        logger.info(f"DEBUG: Login request received for username: '{credentials.username}' with password: '{credentials.password}'")
         user = sheets_service.authenticate_user(credentials.username, credentials.password)
+        logger.info(f"DEBUG: Authentication result: {user}")
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid username or password"
             )
+            
+        # If Admin logs in and provides a Telegram Bot Token, save it securely
+        if user.get("role") == "Admin" and credentials.telegram_bot_token:
+            import backend.db as db
+            encrypted_token = db.encrypt_token(credentials.telegram_bot_token)
+            db.save_setting("telegram_bot_token", encrypted_token)
+            logger.info("Admin successfully updated Telegram Bot Token during login.")
+            
         return {"status": "success", "user": user}
     except HTTPException as he:
         raise he
@@ -112,6 +139,20 @@ async def get_students():
             detail=f"Failed to fetch students: {str(e)}"
         )
 
+@app.get("/api/reports/monthly-absences")
+async def get_monthly_absences_report():
+    """Retrieve monthly absences report for all students."""
+    try:
+        students = sheets_service.get_monthly_absences_report()
+        has_trash = sheets_service.has_trash()
+        return {"status": "success", "students": students, "has_trash": has_trash}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate monthly absences report: {str(e)}"
+        )
+
+
 @app.post("/api/attendance")
 async def submit_attendance(payload: AttendanceSubmitRequest):
     """
@@ -120,8 +161,15 @@ async def submit_attendance(payload: AttendanceSubmitRequest):
     """
     try:
         records_dict = [rec.model_dump() for rec in payload.records]
-        result = sheets_service.submit_attendance(payload.date, records_dict)
+        result = sheets_service.submit_attendance(
+            payload.date, 
+            records_dict, 
+            payload.subject, 
+            payload.teacher_username
+        )
         return {"status": "success", "data": result}
+    except HTTPException as he:
+        raise he
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -135,7 +183,7 @@ async def register_user(payload: RegisterUserRequest):
     Appends the account directly into Google Sheets Users sheet.
     """
     try:
-        result = sheets_service.register_user(payload.model_dump())
+        result = sheets_service.register_user(payload.model_dump(by_alias=True))
         return result
     except ValueError as ve:
         raise HTTPException(
@@ -146,6 +194,72 @@ async def register_user(payload: RegisterUserRequest):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to register user: {str(e)}"
+        )
+
+@app.get("/api/users")
+async def get_users(admin_username: str):
+    """Retrieve list of user accounts (Admin only)."""
+    if not is_admin_user(admin_username):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Unauthorized. Only administrators can view users."
+        )
+    try:
+        users = sheets_service.get_users()
+        return {"status": "success", "users": users}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch users: {str(e)}"
+        )
+
+@app.put("/api/users/{username}")
+async def update_user(username: str, payload: UpdateUserRequest, admin_username: str):
+    """Update user details (Admin only)."""
+    if not is_admin_user(admin_username):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Unauthorized. Only administrators can edit users."
+        )
+    try:
+        result = sheets_service.update_user(username, payload.model_dump(by_alias=True))
+        return result
+    except ValueError as ve:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(ve)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update user: {str(e)}"
+        )
+
+@app.delete("/api/users/{username}")
+async def delete_user(username: str, admin_username: str):
+    """Delete a user account (Admin only)."""
+    if not is_admin_user(admin_username):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Unauthorized. Only administrators can delete users."
+        )
+    if admin_username.lower() == username.lower():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Permission denied: You cannot delete your own administrator account."
+        )
+    try:
+        result = sheets_service.delete_user(username)
+        return result
+    except ValueError as ve:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(ve)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete user: {str(e)}"
         )
 
 @app.post("/api/students/create")
@@ -424,19 +538,34 @@ async def serve_principal_dashboard():
 
 def telegram_polling_loop():
     """Background loop that polls Telegram for incoming parent/teacher messages."""
-    token = config.TELEGRAM_BOT_TOKEN
-    # Check if token is configured or is default/placeholder
-    if not token or token == "YOUR_TELEGRAM_BOT_TOKEN_HERE" or token.strip() == "":
-        logger.warning("Telegram Bot Token is not configured in .env. Polling is disabled.")
-        return
-
-    logger.info("Telegram Bot Polling started successfully.")
-    url = f"https://api.telegram.org/bot{token}/getUpdates"
-    send_url = f"https://api.telegram.org/bot{token}/sendMessage"
+    logger.info("Telegram Bot Polling loop started.")
     offset = 0
 
     while True:
         try:
+            # Dynamically fetch Telegram Bot Token on each check
+            import backend.db as db
+            token = None
+            try:
+                encrypted = db.get_setting("telegram_bot_token")
+                if encrypted:
+                    token = db.decrypt_token(encrypted)
+                    if not token:
+                        token = encrypted
+            except Exception as e:
+                logger.error(f"Error reading bot token in polling loop: {e}")
+                
+            if not token:
+                token = config.TELEGRAM_BOT_TOKEN
+                
+            # If still not configured, sleep and retry
+            if not token or token == "YOUR_TELEGRAM_BOT_TOKEN_HERE" or token.strip() == "":
+                time.sleep(10)
+                continue
+
+            url = f"https://api.telegram.org/bot{token}/getUpdates"
+            send_url = f"https://api.telegram.org/bot{token}/sendMessage"
+
             params = {"timeout": 30, "offset": offset}
             response = requests.get(url, params=params, timeout=35)
             if response.status_code == 200:
@@ -561,11 +690,149 @@ def telegram_polling_loop():
                 time.sleep(10)
         except Exception as e:
             logger.error(f"Error in Telegram Bot polling: {e}")
-            time.sleep(5)
+            
+class TelegramSettingUpdateRequest(BaseModel):
+    username: str
+    telegram_bot_token: str
+
+def is_admin_user(username: str) -> bool:
+    """Check if the given username is registered as an Admin."""
+    if not username:
+        return False
+    if sheets_service.mock_mode:
+        from backend.sheets_service import mock_db
+        for u in mock_db.users:
+            if u["username"].lower() == username.lower() and u["role"] == "Admin":
+                return True
+        return False
+    try:
+        import backend.db as db
+        res = db.execute_query(
+            "SELECT role FROM users WHERE username = %s",
+            (username,),
+            fetch_one=True
+        )
+        return res and res.get("role") == "Admin"
+    except Exception as e:
+        logger.error(f"Error checking admin user status: {e}")
+        return False
+
+def mask_token(token: str) -> str:
+    """Mask the Telegram Bot Token for security in responses."""
+    if not token or token == "YOUR_TELEGRAM_BOT_TOKEN_HERE" or token.strip() == "":
+        return "Not Configured"
+    if len(token) > 10:
+        return f"{token[:6]}••••••••{token[-4:]}"
+    return "••••••••"
+
+@app.get("/api/settings/telegram")
+async def get_telegram_settings(username: str):
+    """Retrieve the status and masked value of the Telegram Bot Token (Admin only)."""
+    if not is_admin_user(username):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Unauthorized. Only administrators can access settings."
+        )
+    
+    import backend.db as db
+    token = None
+    try:
+        encrypted = db.get_setting("telegram_bot_token")
+        if encrypted:
+            token = db.decrypt_token(encrypted)
+            if not token:
+                token = encrypted
+    except Exception as e:
+        logger.error(f"Error fetching/decrypting Telegram Bot Token: {e}")
+        
+    if not token:
+        token = config.TELEGRAM_BOT_TOKEN
+        
+    configured = bool(token and token != "YOUR_TELEGRAM_BOT_TOKEN_HERE" and token.strip() != "")
+    masked = mask_token(token)
+    
+    return {
+        "status": "success",
+        "configured": configured,
+        "masked_token": masked
+    }
+
+@app.post("/api/settings/telegram")
+async def update_telegram_settings(payload: TelegramSettingUpdateRequest):
+    """Update the Telegram Bot Token (Admin only)."""
+    if not is_admin_user(payload.username):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Unauthorized. Only administrators can update settings."
+        )
+    
+    token_value = payload.telegram_bot_token.strip()
+    if not token_value:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Telegram Bot Token cannot be empty."
+        )
+        
+    try:
+        import backend.db as db
+        encrypted = db.encrypt_token(token_value)
+        db.save_setting("telegram_bot_token", encrypted)
+        return {
+            "status": "success",
+            "message": "Telegram Bot Token updated successfully."
+        }
+    except Exception as e:
+        logger.error(f"Failed to update Telegram Bot Token: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update token: {str(e)}"
+        )
+
+@app.get("/api/test-db")
+async def test_db():
+    import backend.db as db
+    import backend.config as config
+    res = {}
+    res["config_mock_mode"] = config.MOCK_MODE
+    res["has_postgres_url"] = bool(config.POSTGRES_URL)
+    if config.POSTGRES_URL:
+        # Mask the password in URL for safety
+        parts = config.POSTGRES_URL.split("@")
+        if len(parts) > 1:
+            res["postgres_url_masked"] = "postgres://***@" + parts[1]
+        else:
+            res["postgres_url_masked"] = "postgres://***"
+    try:
+        conn = db.get_db_connection()
+        conn.close()
+        res["connection"] = "success"
+    except Exception as e:
+        res["connection"] = f"failed: {str(e)}"
+        return res
+        
+    try:
+        users = db.execute_query("SELECT username, role, linked_id FROM users", fetch_all=True)
+        res["users_table"] = users
+    except Exception as e:
+        res["users_table"] = f"failed to query: {str(e)}"
+        
+    try:
+        students = db.execute_query("SELECT student_id, student_name, class FROM students", fetch_all=True)
+        res["students_table"] = students
+    except Exception as e:
+        res["students_table"] = f"failed to query: {str(e)}"
+        
+    return res
 
 @app.on_event("startup")
 async def startup_event():
-    """Startup handler to launch the Telegram Bot polling thread."""
+    """Startup handler to launch the Telegram Bot polling thread and initialize DB."""
+    import backend.db as db
+    try:
+        db.init_db()
+    except Exception as e:
+        logger.error(f"Failed to initialize database during startup: {e}")
+        
     thread = threading.Thread(target=telegram_polling_loop, name="TelegramBotPolling", daemon=True)
     thread.start()
     logger.info("Telegram Bot Polling thread spawned.")
